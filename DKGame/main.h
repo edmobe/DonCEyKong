@@ -26,6 +26,12 @@ typedef struct
   int animFrame, izq, slowingDown;
 } Man;
 
+///EStructura de Pauline
+typedef struct
+{
+  int x, y, dx, paulineFrame;
+}Pauline;
+
 ///estructura de DK
 typedef struct
 {
@@ -51,6 +57,10 @@ typedef struct
    int x, y;
 }Escalera;
 
+typedef struct
+{
+  int x, y, estanonFrame;
+}Estanon;
 
 ///estructura para los estados de juego basicamente se pasan
 ///las estructuras que se crean en el juego
@@ -62,6 +72,12 @@ typedef struct
   ///Donkey kong
   Enemy dk;
 
+  ///Pauline
+  Pauline pauline;
+
+  ///Estañon de fuego
+  Estanon estanon;
+
   ///Piso
   Piso piso[NUM_PISO];
 
@@ -72,7 +88,9 @@ typedef struct
   Escalera escaleras[NUM_ESCALERAS];
 
   ///Images
+  SDL_Texture *paulineFrames[5];
   SDL_Texture *barril;
+  SDL_Texture *estanonFrames[2];
   SDL_Texture *escalera1;
   SDL_Texture *DK[2];
   SDL_Texture *marioFrames[2];

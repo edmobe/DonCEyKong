@@ -86,7 +86,7 @@ void init_game_win(GameState *game)
   //Create label textures for status screen
   SDL_Color white = { 255, 255, 255, 255 };
 
-  SDL_Surface *tmp = TTF_RenderText_Blended(game->font, "You live..", white);
+  SDL_Surface *tmp = TTF_RenderText_Blended(game->font, "WIN!", white);
   game->labelW = tmp->w;
   game->labelH = tmp->h;
   game->label = SDL_CreateTextureFromSurface(game->renderer, tmp);

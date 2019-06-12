@@ -1,3 +1,4 @@
+
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 #include <stdio.h>
@@ -5,7 +6,7 @@
 #include "main.h"
 #include "status.h"
 
-#define GRAVEDAD 0.25f
+#define GRAVEDAD 0.70f
 
 ///Metodo que carga toda la base de nuestro juego
 ///Recibe un gameState
@@ -16,6 +17,33 @@ void loadGame(GameState *game)
   ///Carga la imagen del barril 1 y crea texturas con el render a partir de ella
   surface = IMG_Load("media/barril3.png");
   game->barril = SDL_CreateTextureFromSurface(game->renderer, surface);
+  SDL_FreeSurface(surface);
+
+  ///Carga la imagen del barril 1 y crea texturas con el render a partir de ella
+  surface = IMG_Load("media/barril1.png");
+  game->estanonFrames[0] = SDL_CreateTextureFromSurface(game->renderer, surface);
+  SDL_FreeSurface(surface);
+
+  ///Carga la imagen de Pauline1 1 y crea texturas con el render a partir de ella
+  surface = IMG_Load("media/Pauline/pauline3.png");
+  game->paulineFrames[0] = SDL_CreateTextureFromSurface(game->renderer, surface);
+  SDL_FreeSurface(surface);
+  ///Carga la imagen de Pauline1 2 y crea texturas con el render a partir de ella
+  surface = IMG_Load("media/Pauline/pauline4.png");
+  game->paulineFrames[1] = SDL_CreateTextureFromSurface(game->renderer, surface);
+  SDL_FreeSurface(surface);
+  ///Carga la imagen de Pauline1 3 y crea texturas con el render a partir de ella
+  surface = IMG_Load("media/Pauline/pauline2.png");
+  game->paulineFrames[2] = SDL_CreateTextureFromSurface(game->renderer, surface);
+  SDL_FreeSurface(surface);
+  ///Carga la imagen de Pauline1 4 y crea texturas con el render a partir de ella
+  surface = IMG_Load("media/Pauline/pauline1.png");
+  game->paulineFrames[3] = SDL_CreateTextureFromSurface(game->renderer, surface);
+  SDL_FreeSurface(surface);
+
+  ///Carga la imagen del barril 1 y crea texturas con el render a partir de ella
+  surface = IMG_Load("media/barril2.png");
+  game->estanonFrames[1] = SDL_CreateTextureFromSurface(game->renderer, surface);
   SDL_FreeSurface(surface);
 
   ///Carga la imagen de DK y crea texturas con el render a partir de ella
@@ -106,12 +134,7 @@ void loadGame(GameState *game)
   init_status_lives(game);
   game->deathCountdown = -1;
 
-  ///init barril
-  game->barriles[0].x = 100;
-  game->barriles[0].y = 120;
-  game->barriles[0].dx = 1;
-  game->barriles[0].dy = 0;
-
+  
   ///init label para escribir en pantalla
   game->label=NULL;
 
@@ -119,8 +142,8 @@ void loadGame(GameState *game)
   game->time = 0;
 
   ///init DK
-  game->dk.x = 5;
-  game->dk.y = 100;
+  game->dk.x = 20;
+  game->dk.y = 80;
 
   ///init suelo
   ///primer piso
@@ -218,19 +241,24 @@ void loadGame(GameState *game)
     game->escaleras[i+1].y=115-40;
     
   }
+  ///Estañon de fuego
+  game->estanon.x = 50;
+  game->estanon.y = 620;
+  game->estanon.estanonFrame = 0;
+
+  ///Pauline 
+  game->pauline.x = 120;
+  game->pauline.y = 43;
+  game->pauline.dx = 1;
+  game->pauline.paulineFrame = 0;
 
 
 }
 
 
-
-
-
-
-
 ///Metodo que nos permite realizar animaciones con las imagenes
 ///recibe un gameState
-void process(GameState *game)
+void process(int newBarril, GameState *game)
 {
   ///a�ade tiempo, para hacer las animaciones por frames
   game->time++;
@@ -258,6 +286,44 @@ void process(GameState *game)
    ///si se esta jugando se realisa esto
    else if(game->statusState == STATUS_STATE_GAME)
   {
+      ///Animación del estañon de fuego
+      if (game->time % 8 == 0){
+        if(game->estanon.estanonFrame == 0)
+          {
+            game->estanon.estanonFrame= 1;
+                   
+          }
+          else
+          {
+            game->estanon.estanonFrame = 0;
+          }
+      } 
+
+      ///Animación de Pauline
+      if (game->time % 8 == 0 && game->pauline.dx > 0){
+        if(game->pauline.paulineFrame == 0 || game->pauline.paulineFrame == 3)
+          {
+            game->pauline.paulineFrame = 1;
+                   
+          }
+          else
+          {
+            game->pauline.paulineFrame = 0;
+          }
+      }
+      if (game->time % 8 == 0 && game->pauline.dx < 0){
+        if(game->pauline.paulineFrame == 0 || game->pauline.paulineFrame == 3)
+          {
+            game->pauline.paulineFrame = 2;
+                   
+          }
+          else
+          {
+            game->pauline.paulineFrame = 3;
+          }
+      }
+
+      ///Animación de mario muerto
       if(!game->man.muerto)
       {
           ///movimiento de mario
@@ -274,24 +340,24 @@ void process(GameState *game)
                 if(man->animFrame == 0)
                 {
                    man->animFrame = 1;
+                   
                 }
                 else
                 {
                    man->animFrame = 0;
+                   
                 }
              }
         }
-        if(man->x == 250 && man->y == 100)
-      {
-        init_game_win(game);
-        game->statusState = STATUS_STATE_WIN;
+       
+      for (int i = 0; i < newBarril; i++){
+        game->barriles[i].dy += GRAVEDAD;
       }
-      game->barriles[0].dy += GRAVEDAD;
-
-       if (game->man.up == 0){
-          man->dy += GRAVEDAD;
+    
+       
+       man->dy += GRAVEDAD;
           
-       } 
+        
        
        }
     ///Si mario muere y el contador de muertes es inferior a 0
@@ -335,11 +401,6 @@ void process(GameState *game)
 
 }
 
-
-
-
-
-
 ///Util funcion que nos permite saber si dos rectangulos (imagenes) estan chocando
 int collide2d(float x1, float y1, float x2, float y2, float wt1, float ht1, float wt2, float ht2)
 {
@@ -360,6 +421,12 @@ void collisionDetect(GameState *game)
     {
       game->man.muerto = 1;
     }
+  }
+
+  if(collide2d(game->man.x, game->man.y, game->pauline.x, game->pauline.y, 30, 30, 30, 30))
+  {
+        init_game_win(game);
+        game->statusState = STATUS_STATE_WIN;
   }
 
   ///Verifica que mario no salga por la derecha
@@ -444,7 +511,7 @@ void collisionDetect(GameState *game)
 
 ///Metodo que verifica los posibles eventos que pueden pasar en el juego
 ///Recibe una ventana y un gameState para verificar los eventos
-int processEvents(SDL_Window *window, GameState *game)
+int processEvents(SDL_Window *window, GameState *game, int *newBarril)
 {
   ///Se llama a una funcion de SDL que nos facilita la verificacion de eventos
   SDL_Event event;
@@ -478,7 +545,7 @@ int processEvents(SDL_Window *window, GameState *game)
 
             if(game->man.enSuelo)
             {
-              game->man.dy = -2;
+              game->man.dy = -6;
               game->man.enSuelo = 0;
          
               
@@ -498,21 +565,44 @@ int processEvents(SDL_Window *window, GameState *game)
   ///Esto nos permite que mario salte mas, al dejar la tecla de arriba apretada
   const Uint8 *state = SDL_GetKeyboardState(NULL);
   if(state[SDL_SCANCODE_UP])
-  {
-     ///Verifica colision con escalera
+    {
+      game->man.dy -=0.2f;
+      ///Verifica colision con escalera
       for(int i = 0; i < 12; i++)
-          {
-          if (collide2d(game->man.x, game->man.y, game->escaleras[i].x, game->escaleras[i].y, 30, 30, 30, 50))
+        {
+          
+          if ((collide2d(game->man.x, game->man.y, game->escaleras[i].x, game->escaleras[i].y, 30, 30, 30, 40)))
             { 
-              game->man.up = 1;
+              if (!(collide2d(game->man.x, game->man.y, game->escaleras[i].x, game->escaleras[i].y, 30, 30, 30, 40)))
+              { 
+                if(state[SDL_SCANCODE_UP])
+                {
+                  game->man.dy +=GRAVEDAD;
+                }
+              
+              }
+              if(!(state[SDL_SCANCODE_UP]))
+              {
+                game->man.dy =0;
+              }
+
+              if(state[SDL_SCANCODE_UP])
+              {
+                game->man.dy -=0.22;
+              }
+
+              
             }
-          }
-          if(!(state[SDL_SCANCODE_UP]))
-          {
-             game->man.up = 0;
-          }
-      game->man.dy -= 0.2f;
+          
+        }
     }
+
+  ///Tecla para lanzar barril
+  if(state[SDL_SCANCODE_P])
+  {
+    
+    *newBarril = *newBarril + 1; 
+  }
     
   if(!(state[SDL_SCANCODE_UP]))
   {
@@ -560,7 +650,7 @@ int processEvents(SDL_Window *window, GameState *game)
 
 ///Metodo para dibujar en pantalla todo lo que sea solicitado
 ///Recibe un render y un gameState
-void doRender(SDL_Renderer *renderer, GameState *game)
+void doRender(SDL_Renderer *renderer, GameState *game, int newBarril)
 {
     ///si el juego esta en estado vidas
     if(game->statusState == STATUS_STATE_LIVES){
@@ -593,6 +683,9 @@ void doRender(SDL_Renderer *renderer, GameState *game)
     SDL_Rect escaleraRect = { game->escaleras[i].x, game->escaleras[i].y, 30, 50 };
     SDL_RenderCopy(renderer, game->escalera1, NULL, &escaleraRect);
   }
+  ///dibuja los estañones
+  SDL_Rect estanonRect = {game->estanon.x, game->estanon.y, 40, 40};
+  SDL_RenderCopy(renderer, game->estanonFrames[game->estanon.estanonFrame], NULL, &estanonRect);
 
   ///dibujando el suelo
   for(int i = 0; i < 135; i++)
@@ -602,16 +695,24 @@ void doRender(SDL_Renderer *renderer, GameState *game)
   }
 
   ///dibujando a DK
-  SDL_Rect DKRect = { game->dk.x, game->dk.y, 50, 50 };
+  SDL_Rect DKRect = { game->dk.x, game->dk.y, 70, 70 };
   SDL_RenderCopy(renderer, game->DK[0], NULL, &DKRect);
 
+  ///Dibuja a pailine 
+  SDL_Rect paulineRect = {game->pauline.x, game->pauline.y, 30, 30};
+  SDL_RenderCopy(renderer, game->paulineFrames[game->pauline.paulineFrame], NULL, &paulineRect);
+
   ///dibujando a barriles
-  SDL_Rect barrilRect = { game->barriles[0].x, game->barriles[0].y, 20, 20 };
-  SDL_RenderCopy(renderer, game->barril, NULL, &barrilRect);
+  for (int i = 0; i < newBarril; i++)
+  {
+    SDL_Rect barrilRect = { game->barriles[i].x, game->barriles[i].y, 20, 20 };
+    SDL_RenderCopy(renderer, game->barril, NULL, &barrilRect);
+  }
+  
 
   ///dibujando a mario
   SDL_Rect rect = {game->man.x, game->man.y, 30, 30 };
-  SDL_RenderCopy(renderer, game->marioFrames[game->man.animFrame], NULL, &rect);
+  SDL_RenderCopyEx(renderer, game->marioFrames[game->man.animFrame], NULL, &rect, 0, NULL, (game->man.izq == 0));
 
   ///dibuja a mario cuando muere
   if(game->man.muerto)
@@ -629,46 +730,85 @@ void doRender(SDL_Renderer *renderer, GameState *game)
 }
 
 
-void moveBarril(GameState *game){
+
+
+///****************************Parte de los barriles**********************************************
+
+
+
+
+///Metodo encargado de mover los barriles
+void moveBarril(int newBarril ,GameState *game){
 
   //Verifica colision con el suelo
   for(int i = 0; i < 135; i++)
   {
     float mw = 25, mh = 25;
-    float mx = game->barriles[0].x, my = game->barriles[0].y;
-    float bx = game->piso[i].x, by = game->piso[i].y, bw = game->piso[i].w, bh = game->piso[i].h;
- 
-    if(mx+mw > bx && mx<bx+bw)
+    for (int j = 0; j < newBarril; j++)
     {
-      ///Estamos callendo en el suelo
-      if(my+mh > by && my < by && game->barriles[0].dy > 0)
+      float mx = game->barriles[j].x, my = game->barriles[j].y;
+      float bx = game->piso[i].x, by = game->piso[i].y, bw = game->piso[i].w, bh = game->piso[i].h;
+  
+      if(mx+mw > bx && mx<bx+bw)
       {
-        ///corrige y
-        game->barriles[0].y = by-mh;
-        my = by-mh;
-        game->barriles[0].dy = 0;
+        ///Estamos callendo en el suelo
+        if(my+mh > by && my < by && game->barriles[j].dy > 0)
+        {
+          ///corrige y
+          game->barriles[j].y = by-mh;
+          my = by-mh;
+          game->barriles[j].dy = 0;
 
+        }
       }
+    } 
+
+  }
+  ///Encargada de que los barriles no se salgan de la pantalla
+  for (int i = 0; i < newBarril; i++)
+  {
+    game->barriles[i].x += game->barriles[i].dx;
+    game->barriles[i].y += game->barriles[i].dy;
+
+  ///Verifica que el barril no se salga por la derecha
+    if (game->barriles[i].x >= 600){
+      game->barriles[i].dx *= -1;
+        
     }
+  ///Verifica que el barill no se salga por la izquierda
+    if (game->barriles[i].x <= 0){
+      game->barriles[i].dx *= -1;
 
-  }
-
-  game->barriles[0].x += game->barriles[0].dx;
-  game->barriles[0].y += game->barriles[0].dy;
-
-///Verifica que el barril no se salga por la derecha
-  if (game->barriles[0].x >= 600){
-    game->barriles[0].dx *= -1;
-      
-  }
-///Verifica que el barill no se salga por la izquierda
-  if (game->barriles[0].x <= 40){
-    game->barriles[0].dx *= -1;
-
+    }
   }
 
 }
 
+///Crea un barril cada vez que se presiona el botón
+void createBarril(int newBarril, GameState *game)
+{
+  game->barriles[newBarril].x = 100;
+  game->barriles[newBarril].y = 120;
+  game->barriles[newBarril].dx = 1;
+  game->barriles[newBarril].dy = 0;
+}
+
+///Mueve a Pauline 
+void movePauline(GameState *game){
+    game->pauline.x += game->pauline.dx;
+    
+
+  ///Verifica que pauline no se salga por la derecha
+    if (game->pauline.x >= 300){
+      game->pauline.dx *= -1;
+        
+    }
+  ///Verifica que pauline no se salga por la izquierda
+    if (game->pauline.x <= 100){
+      game->pauline.dx *= -1;
+
+    }
+}
 
 
 /// Funcion main, esta funcion nos permite correr el juego juntando todo lo
@@ -707,22 +847,36 @@ int main(int argc, char *argv[])
 
   /// Abre la ventana
   int done = 0;
+  int temporal = 0;
+  int newBarril = 0;
 
   /// Loop del evento principal del juego
   while(!done)
   {
     ///Verifica eventos
-    done = processEvents(window, &gameState);
+    done = processEvents(window, &gameState, &temporal);
+
+    ///Verifica  que los como se crean lo barriles para saber cuantos se deben pintar
+    if (temporal > 0 && newBarril < 12) 
+    {
+      ///init barril
+      createBarril(newBarril, &gameState);
+      newBarril += 1;
+      temporal = 0;
+    }
     ///Llama al metodo process que nos permite crear las animaciones de movimiento
-    process(&gameState);
+    process(newBarril, &gameState);
     ///Llama al metodo que verifica colosiones entre objetos
     collisionDetect(&gameState);
 
     ///Llama al metodo que dezplega el render
-    doRender(renderer, &gameState);
+    doRender(renderer, &gameState, newBarril);
 
     ///Llama el método para rodar barril
-    moveBarril(&gameState);
+    moveBarril(newBarril, &gameState);
+
+    ///Mover Pauline 
+    movePauline(&gameState);
 
   }
 
