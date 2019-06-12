@@ -42,6 +42,7 @@ typedef struct
 typedef struct
 {
     int x, y;
+    float dx, dy;
 }Barril;
 
 ///Estructura para la escalera

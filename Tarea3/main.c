@@ -107,8 +107,10 @@ void loadGame(GameState *game)
   game->deathCountdown = -1;
 
   ///init barril
-  game->barriles[0].x = 300;
-  game->barriles[0].y = 100;
+  game->barriles[0].x = 100;
+  game->barriles[0].y = 120;
+  game->barriles[0].dx = 1;
+  game->barriles[0].dy = 0;
 
   ///init label para escribir en pantalla
   game->label=NULL;
@@ -284,6 +286,7 @@ void process(GameState *game)
         init_game_win(game);
         game->statusState = STATUS_STATE_WIN;
       }
+      game->barriles[0].dy += GRAVEDAD;
 
        if (game->man.up == 0){
           man->dy += GRAVEDAD;
@@ -555,12 +558,6 @@ int processEvents(SDL_Window *window, GameState *game)
 
 
 
-
-
-
-
-
-
 ///Metodo para dibujar en pantalla todo lo que sea solicitado
 ///Recibe un render y un gameState
 void doRender(SDL_Renderer *renderer, GameState *game)
@@ -613,7 +610,7 @@ void doRender(SDL_Renderer *renderer, GameState *game)
   SDL_RenderCopy(renderer, game->barril, NULL, &barrilRect);
 
   ///dibujando a mario
-  SDL_Rect rect = { game->man.x, game->man.y, 30, 30 };
+  SDL_Rect rect = {game->man.x, game->man.y, 30, 30 };
   SDL_RenderCopy(renderer, game->marioFrames[game->man.animFrame], NULL, &rect);
 
   ///dibuja a mario cuando muere
@@ -632,8 +629,45 @@ void doRender(SDL_Renderer *renderer, GameState *game)
 }
 
 
+void moveBarril(GameState *game){
 
+  //Verifica colision con el suelo
+  for(int i = 0; i < 135; i++)
+  {
+    float mw = 25, mh = 25;
+    float mx = game->barriles[0].x, my = game->barriles[0].y;
+    float bx = game->piso[i].x, by = game->piso[i].y, bw = game->piso[i].w, bh = game->piso[i].h;
+ 
+    if(mx+mw > bx && mx<bx+bw)
+    {
+      ///Estamos callendo en el suelo
+      if(my+mh > by && my < by && game->barriles[0].dy > 0)
+      {
+        ///corrige y
+        game->barriles[0].y = by-mh;
+        my = by-mh;
+        game->barriles[0].dy = 0;
 
+      }
+    }
+
+  }
+
+  game->barriles[0].x += game->barriles[0].dx;
+  game->barriles[0].y += game->barriles[0].dy;
+
+///Verifica que el barril no se salga por la derecha
+  if (game->barriles[0].x >= 600){
+    game->barriles[0].dx *= -1;
+      
+  }
+///Verifica que el barill no se salga por la izquierda
+  if (game->barriles[0].x <= 40){
+    game->barriles[0].dx *= -1;
+
+  }
+
+}
 
 
 
@@ -686,6 +720,9 @@ int main(int argc, char *argv[])
 
     ///Llama al metodo que dezplega el render
     doRender(renderer, &gameState);
+
+    ///Llama el método para rodar barril
+    moveBarril(&gameState);
 
   }
 
