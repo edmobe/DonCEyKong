@@ -18,8 +18,8 @@
 int main(int argc , char *argv[])
 {
     int opt = TRUE;
-    int master_socket , addrlen , new_socket , client_socket[30] ,
-            max_clients = 30 , activity, i , valread , sd;
+    int master_socket , addrlen , new_socket , client_socket[3] ,
+            max_clients = 3 , activity, i , valread , sd;
     int max_sd;
     struct sockaddr_in address;
 
@@ -28,9 +28,11 @@ int main(int argc , char *argv[])
     //set of socket descriptors
     fd_set readfds;
 
-    //a message
-    char *hello_message = "Hola desde el server \r\n";
-    char *game_info = "Mario_x = 5, Mario_y = 10 \r\n";
+    //server messages
+    char *hello_message = "0\n";
+    char *game_info = "1/Info procesada\n";
+
+    //server variables
 
     //initialise all client_socket[] to 0 so not checked
     for (i = 0; i < max_clients; i++)
@@ -125,14 +127,15 @@ int main(int argc , char *argv[])
             //inform user of socket number - used in send and receive commands
             printf("Nueva conexion, fd del socket es %d , ip: %s , puerto: %d\n" , new_socket , inet_ntoa(address.sin_addr) , ntohs
                     (address.sin_port));
-
+            /*
             //send new connection greeting message
             if( send(new_socket, hello_message, strlen(hello_message), 0) != strlen(hello_message) )
             {
                 perror("send");
             }
-
+            
             puts("Mensaje inicial enviado");
+            */
 
             //add new socket to array of sockets
             for (i = 0; i < max_clients; i++)
@@ -141,7 +144,7 @@ int main(int argc , char *argv[])
                 if( client_socket[i] == 0 )
                 {
                     client_socket[i] = new_socket;
-                    printf("Adding to list of sockets as %d\n" , i);
+                    printf("Agregando a la lista de sockets como: %d\n" , i);
 
                     break;
                 }
@@ -173,11 +176,19 @@ int main(int argc , char *argv[])
                     //Echo back the message that came in
                 else
                 {
-                    printf("He recibido: %s", buffer);
+                    printf("He recibido: %s\n", buffer);
                     //set the string terminating NULL byte on the end
                     //of the data read
                     buffer[valread] = '\0';
-                    send(sd , game_info , strlen(game_info) , 0 );
+                    
+                    //Se recibe info del juego
+                    if(buffer[0] == '1'){
+                        //Process info
+                        send(sd, game_info, strlen(game_info), 0);
+                    } else {
+                        char *ukn_command = "No reconozco ese comando\n";
+                        send(sd, ukn_command, strlen(ukn_command), 0);
+                    }
                 }
             }
         }

@@ -1,35 +1,39 @@
-// Write CPP code here
 #include <netdb.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include <sys/socket.h>
 #define MAX 80
 #define PORT 8888
 #define SA struct sockaddr
-void func(int sockfd)
+void give_info(int sockfd)
 {
-    char buff[MAX];
+    char *buff[MAX];
     int n;
-    for (;;) {
-        bzero(buff, sizeof(buff));
-        printf("Mensaje a enviar: ");
-        n = 0;
-        while ((buff[n++] = getchar()) != '\n')
-            ;
-        write(sockfd, buff, sizeof(buff));
-        bzero(buff, sizeof(buff));
-        read(sockfd, buff, sizeof(buff));
-        printf("Mensaje del servidor: %s", buff);
-        if ((strncmp(buff, "exit", 4)) == 0) {
-            printf("El cliente ha salido...\n");
-            break;
-        }
+    bzero(buff, sizeof(buff));
+    printf("Mensaje a enviar: ");
+    char *man_x = "XMAN";
+    char *man_y = "YMAN";
+    buff[0] = '1';
+    strcat(buff, "/");
+    strcat(buff, man_x);
+    strcat(buff, "/");
+    strcat(buff, man_y);
+    printf("%s\n", buff);
+    printf("WRITE\n");
+    write(sockfd, buff, sizeof(buff));
+    bzero(buff, sizeof(buff));
+    printf("READ\n");
+    read(sockfd, buff, sizeof(buff));
+    printf("Mensaje del servidor: %s\n", buff);
+    printf("HA SALIDO?\n");
+    if ((strncmp(buff, "exit", 4)) == 0) {
+        printf("El cliente ha salido...\n");
     }
 }
 
 int main()
 {
+    //Socket
     int sockfd, connfd;
     struct sockaddr_in servaddr, cli;
 
@@ -56,8 +60,12 @@ int main()
     else
         printf("Conectado al servidor...\n");
 
+
     // function for chat
-    func(sockfd);
+    while(1){
+        give_info(sockfd);
+    }
+    
 
     // close the socket
     close(sockfd);

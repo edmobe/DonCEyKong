@@ -1,4 +1,4 @@
-
+//GUI
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 #include <stdio.h>
@@ -6,7 +6,18 @@
 #include "main.h"
 #include "status.h"
 
+//Socket
+#include <netdb.h>
+#include <stdlib.h>
+#include <sys/socket.h>
+
+//GUI
 #define GRAVEDAD 0.70f
+
+//Socket
+#define PORT 8888
+#define MAX 500
+#define SA struct sockaddr
 
 ///Metodo que carga toda la base de nuestro juego
 ///Recibe un gameState
@@ -810,11 +821,77 @@ void movePauline(GameState *game){
     }
 }
 
+// Da la informacion del juego al servidor
+void send_info(int sockfd, GameState *game)
+{
+    printf("Mensaje a enviar: ");
+    char buffer[MAX];
+    char man_x[10];
+    char man_y[10];
+    int i = 0;
+    snprintf(man_x, sizeof man_x, "%f", game->man.x);
+    snprintf(man_y, sizeof man_y, "%f", game->man.y);
+    buffer[0] = '1';
+    buffer[1] = '/';
+
+    while(man_x[i] != '\0') {
+      buffer[i + 2] = man_x[i];
+      i++;
+    }
+    buffer[i] = '/';
+    
+    int j = 0;
+
+    while(man_y[j] != '\0') {
+      buffer[i + 1] = man_y[j];
+      i++;
+      j++;
+    }
+
+    printf("%s\n", buffer);
+
+    write(sockfd, buffer, sizeof(buffer));
+    bzero(buffer, sizeof(buffer));
+    read(sockfd, buffer, sizeof(buffer));
+    printf("Mensaje del servidor: %s\n", buffer);
+    if ((strncmp(buffer, "exit", 4)) == 0) {
+        printf("El cliente ha salido...\n");
+    }
+}
+
 
 /// Funcion main, esta funcion nos permite correr el juego juntando todo lo
 /// necesario para el buen funcionamiento
 int main(int argc, char *argv[])
 {
+
+  //Socket
+    int sockfd, connfd;
+    struct sockaddr_in servaddr, cli;
+
+    // socket create and varification
+    sockfd = socket(AF_INET, SOCK_STREAM, 0);
+    if (sockfd == -1) {
+        printf("Error al crear el socket...\n");
+        exit(0);
+    }
+    else
+        printf("Socket creado exitosamente..\n");
+    bzero(&servaddr, sizeof(servaddr));
+
+    // assign IP, PORT
+    servaddr.sin_family = AF_INET;
+    servaddr.sin_addr.s_addr = inet_addr("127.0.0.1");
+    servaddr.sin_port = htons(PORT);
+
+    // connect the client socket to server socket
+    if (connect(sockfd, (SA*)&servaddr, sizeof(servaddr)) != 0) {
+        printf("Error en la conexion al servidor...\n");
+        exit(0);
+    }
+    else
+        printf("Conectado al servidor...\n");
+
   GameState gameState;
   SDL_Window *window = NULL;        /// Declara la ventana
   SDL_Renderer *renderer = NULL;    /// Declara el renderer
@@ -853,6 +930,9 @@ int main(int argc, char *argv[])
   /// Loop del evento principal del juego
   while(!done)
   {
+    // Da al informacion del juego al servidor
+    send_info(sockfd, &gameState);
+    
     ///Verifica eventos
     done = processEvents(window, &gameState, &temporal);
 
@@ -899,6 +979,9 @@ int main(int argc, char *argv[])
 
   ///Destruye el font
   TTF_Quit();
+
+  //Cierra el socket
+  close(sockfd);
 
   /// Limpia todo y se sale
   SDL_Quit();
