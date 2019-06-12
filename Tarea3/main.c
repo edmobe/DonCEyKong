@@ -5,8 +5,7 @@
 #include "main.h"
 #include "status.h"
 
-#define GRAVEDAD 0.75f
-
+#define GRAVEDAD 0.25f
 
 ///Metodo que carga toda la base de nuestro juego
 ///Recibe un gameState
@@ -97,6 +96,8 @@ void loadGame(GameState *game)
   game->man.slowingDown = 0;
   game->man.lives=3;
   game->man.muerto = 0;
+  game->man.up = 0;
+  game->man.down = 0;
 
   ///init el estado del juego
   game->statusState=STATUS_STATE_LIVES;
@@ -184,7 +185,7 @@ void loadGame(GameState *game)
     game->escaleras[i].x=500;
     game->escaleras[i].y=temporal;
     game->escaleras[i+1].x=500;
-    game->escaleras[i+1].y=temporal-40;
+    game->escaleras[i+1].y=temporal-50;
     temporal = 410;
   }
   ///ini escaleras segunda parte
@@ -206,6 +207,7 @@ void loadGame(GameState *game)
     game->escaleras[i+1].y=200-40;
     
   }
+  ///Escaleras cuarta parte
   for (int i = 10; i < 12; i += 2)
   {
     game->escaleras[i].x=315;
@@ -277,14 +279,17 @@ void process(GameState *game)
                 }
              }
         }
-        if(man->x > 38320)
+        if(man->x == 250 && man->y == 100)
       {
         init_game_win(game);
         game->statusState = STATUS_STATE_WIN;
       }
 
-        man->dy += GRAVEDAD;
-
+       if (game->man.up == 0){
+          man->dy += GRAVEDAD;
+          
+       } 
+       
        }
     ///Si mario muere y el contador de muertes es inferior a 0
     if(game->man.muerto && game->deathCountdown < 0)
@@ -348,7 +353,7 @@ void collisionDetect(GameState *game)
    ///Verifica choques con barriles
   for(int i = 0; i < NUM_BARRILES; i++)
   {
-    if(collide2d(game->man.x, game->man.y, game->barriles[i].x, game->barriles[i].y, 48, 48, 32, 32))
+    if(collide2d(game->man.x, game->man.y, game->barriles[i].x, game->barriles[i].y, 30, 30, 20, 20))
     {
       game->man.muerto = 1;
     }
@@ -365,7 +370,6 @@ void collisionDetect(GameState *game)
   {
       game->man.x = 40;
   }
-
 
   ///Verifica colision con el suelo
   for(int i = 0; i < 135; i++)
@@ -468,11 +472,15 @@ int processEvents(SDL_Window *window, GameState *game)
           break;
           ///caso en que se apreta la tecla de arriba
           case SDLK_UP:
+
             if(game->man.enSuelo)
             {
-              game->man.dy = -8;
+              game->man.dy = -2;
               game->man.enSuelo = 0;
+         
+              
             }
+            
           break;
         }
       }
@@ -488,7 +496,24 @@ int processEvents(SDL_Window *window, GameState *game)
   const Uint8 *state = SDL_GetKeyboardState(NULL);
   if(state[SDL_SCANCODE_UP])
   {
-    game->man.dy -= 0.2f;
+     ///Verifica colision con escalera
+      for(int i = 0; i < 12; i++)
+          {
+          if (collide2d(game->man.x, game->man.y, game->escaleras[i].x, game->escaleras[i].y, 30, 30, 30, 50))
+            { 
+              game->man.up = 1;
+            }
+          }
+          if(!(state[SDL_SCANCODE_UP]))
+          {
+             game->man.up = 0;
+          }
+      game->man.dy -= 0.2f;
+    }
+    
+  if(!(state[SDL_SCANCODE_UP]))
+  {
+    game->man.up = 0;
   }
 
   ///Caminar de mario a la izquierda
@@ -584,7 +609,7 @@ void doRender(SDL_Renderer *renderer, GameState *game)
   SDL_RenderCopy(renderer, game->DK[0], NULL, &DKRect);
 
   ///dibujando a barriles
-  SDL_Rect barrilRect = { game->barriles[0].x, game->barriles[0].y, 30, 30 };
+  SDL_Rect barrilRect = { game->barriles[0].x, game->barriles[0].y, 20, 20 };
   SDL_RenderCopy(renderer, game->barril, NULL, &barrilRect);
 
   ///dibujando a mario

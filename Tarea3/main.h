@@ -21,6 +21,7 @@ typedef struct
   float dx, dy;
   int enSuelo, muerto;
   int lives;
+  int up, down;
 
   int animFrame, izq, slowingDown;
 } Man;
@@ -46,7 +47,7 @@ typedef struct
 ///Estructura para la escalera
 typedef struct 
 {
-   int x, y, w , h;
+   int x, y;
 }Escalera;
 
 
