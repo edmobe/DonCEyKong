@@ -9,6 +9,7 @@
 
 #define NUM_PISO 135
 #define NUM_BARRILES 15
+#define NUM_BARRIL_BAJA 15
 #define NUM_ESCALERAS 12
 #define NUM_LLAMAS 50
 
@@ -51,6 +52,13 @@ typedef struct
     int x, y;
     float dx, dy;
 }Barril;
+
+///Bariles bajan
+typedef struct
+{
+    int x, y, barrilBajanFrame;
+    float dy;
+}BarrilBajan;
 
 ///Estructura de las llamas
 typedef struct 
@@ -95,10 +103,14 @@ typedef struct
   ///Barriles
   Barril barriles[NUM_BARRILES];
 
+  ///Barriles que bajan
+  BarrilBajan barrilBaja[NUM_BARRIL_BAJA];
+
   ///Escalera
   Escalera escaleras[NUM_ESCALERAS];
 
   ///Images
+  SDL_Texture *barrilBajaFrames[2];
   SDL_Texture *llamaFrames[5];
   SDL_Texture *paulineFrames[5];
   SDL_Texture *barril;

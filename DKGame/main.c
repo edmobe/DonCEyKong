@@ -5,6 +5,7 @@
 #include <time.h>
 #include "main.h"
 #include "status.h"
+#include <stdlib.h>
 
 //Socket
 #include <netdb.h>
@@ -70,6 +71,15 @@ void loadGame(GameState *game)
   game->llamaFrames[3] = SDL_CreateTextureFromSurface(game->renderer, surface);
   SDL_FreeSurface(surface);
 
+
+  ///Carga la imagen del barril 7 y crea texturas con el render a partir de ella
+  surface = IMG_Load("media/barril7.png");
+  game->barrilBajaFrames[0] = SDL_CreateTextureFromSurface(game->renderer, surface);
+  SDL_FreeSurface(surface);
+   ///Carga la imagen del barril 8 y crea texturas con el render a partir de ella
+  surface = IMG_Load("media/barril8.png");
+  game->barrilBajaFrames[1] = SDL_CreateTextureFromSurface(game->renderer, surface);
+  SDL_FreeSurface(surface);
 
 
   ///Carga la imagen del barril 1 y crea texturas con el render a partir de ella
@@ -289,7 +299,7 @@ void loadGame(GameState *game)
 
 ///Metodo que nos permite realizar animaciones con las imagenes
 ///recibe un gameState
-void process(int newBarril, int newLlama, GameState *game)
+void process(int newBarril, int newLlama, int newBarrilBaja, GameState *game)
 {
   ///a�ade tiempo, para hacer las animaciones por frames
   game->time++;
@@ -378,6 +388,21 @@ void process(int newBarril, int newLlama, GameState *game)
             game->llamas[i].llamaFrame = 3;
           }
       }
+      }
+
+      ///Animación de los Barriles que bajan
+      for(int i = 0; i < newBarrilBaja; i++){
+        if (game->time % 8 == 0){
+          if(game->barrilBaja[i].barrilBajanFrame == 0)
+           {
+              game->barrilBaja[i].barrilBajanFrame = 1;
+                   
+           }
+            else
+            {
+              game->barrilBaja[i].barrilBajanFrame = 0;
+            }
+        }
       }
 
       ///Animación de mario muerto
@@ -478,9 +503,17 @@ int collide2d(float x1, float y1, float x2, float y2, float wt1, float ht1, floa
 void collisionDetect(GameState *game)
 {
    ///Verifica choques con barriles
+  int i;
   for(int i = 0; i < NUM_BARRILES; i++)
   {
     if(collide2d(game->man.x, game->man.y, game->barriles[i].x, game->barriles[i].y, 30, 30, 20, 20))
+    {
+      game->man.muerto = 1;
+    }
+  }
+  for(i = 0; i < NUM_BARRIL_BAJA; i++)
+  {
+    if(collide2d(game->man.x, game->man.y, game->barrilBaja[i].x, game->barrilBaja[i].y, 30, 30, 20, 20))
     {
       game->man.muerto = 1;
     }
@@ -605,7 +638,7 @@ void collisionDetect(GameState *game)
 
 ///Metodo que verifica los posibles eventos que pueden pasar en el juego
 ///Recibe una ventana y un gameState para verificar los eventos
-int processEvents(SDL_Window *window, GameState *game, int *newBarril, int *newLlamas)
+int processEvents(SDL_Window *window, GameState *game, int *newBarril, int *newLlamas, int *newBarrilBaja)
 {
   ///Se llama a una funcion de SDL que nos facilita la verificacion de eventos
   SDL_Event event;
@@ -697,6 +730,12 @@ int processEvents(SDL_Window *window, GameState *game, int *newBarril, int *newL
     
     *newBarril = *newBarril + 1; 
   }
+  ///Tecla para lanzar barril que baja
+  if(state[SDL_SCANCODE_U])
+  {
+    
+    *newBarrilBaja = *newBarrilBaja + 1; 
+  }
     
   if(!(state[SDL_SCANCODE_UP]))
   {
@@ -756,8 +795,9 @@ int processEvents(SDL_Window *window, GameState *game, int *newBarril, int *newL
 
 ///Metodo para dibujar en pantalla todo lo que sea solicitado
 ///Recibe un render y un gameState
-void doRender(SDL_Renderer *renderer, GameState *game, int newBarril, int newLlama)
+void doRender(SDL_Renderer *renderer, GameState *game, int newBarril, int newLlama, int newBarrilBaja)
 {
+    int i;
     ///si el juego esta en estado vidas
     if(game->statusState == STATUS_STATE_LIVES){
         draw_satus_lives(game);
@@ -785,7 +825,7 @@ void doRender(SDL_Renderer *renderer, GameState *game, int newBarril, int newLla
   SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
 
   ///dibuja las escaleras
-  for (int i = 0; i < 12; i++ ){
+  for (i = 0; i < 12; i++ ){
     SDL_Rect escaleraRect = { game->escaleras[i].x, game->escaleras[i].y, 30, 50 };
     SDL_RenderCopy(renderer, game->escalera1, NULL, &escaleraRect);
   }
@@ -794,7 +834,7 @@ void doRender(SDL_Renderer *renderer, GameState *game, int newBarril, int newLla
   SDL_RenderCopy(renderer, game->estanonFrames[game->estanon.estanonFrame], NULL, &estanonRect);
 
   ///dibujando el suelo
-  for(int i = 0; i < 135; i++)
+  for(i = 0; i < 135; i++)
   {
     SDL_Rect sueloRect = { game->piso[i].x, game->piso[i].y, game->piso[i].w, game->piso[i].h };
     SDL_RenderCopy(renderer, game->suelo, NULL, &sueloRect);
@@ -809,23 +849,31 @@ void doRender(SDL_Renderer *renderer, GameState *game, int newBarril, int newLla
   SDL_RenderCopy(renderer, game->paulineFrames[game->pauline.paulineFrame], NULL, &paulineRect);
 
   ///dibujando a barriles
-  for (int i = 0; i < newBarril; i++)
+  for (i = 0; i < newBarril; i++)
   {
     SDL_Rect barrilRect = { game->barriles[i].x, game->barriles[i].y, 20, 20 };
     SDL_RenderCopy(renderer, game->barril, NULL, &barrilRect);
   }
   
   ///Dibuja las llamas
-  for (int i = 0; i < newLlama; i++)
+  for (i = 0; i < newLlama; i++)
   {
     SDL_Rect llamaRect = { game->llamas[i].x, game->llamas[i].y, 20, 20 };
     SDL_RenderCopy(renderer, game->llamaFrames[game->llamas[i].llamaFrame], NULL, &llamaRect);
+  }
+
+  ///Dibuja las barriles que caen
+  for (i = 0; i < newBarrilBaja; i++)
+  {
+    SDL_Rect BarrilBajaRect = { game->barrilBaja[i].x, game->barrilBaja[i].y, 20, 20 };
+    SDL_RenderCopy(renderer, game->barrilBajaFrames[game->barrilBaja[i].barrilBajanFrame], NULL, &BarrilBajaRect);
   }
 
   ///dibujando a mario
   SDL_Rect rect = {game->man.x, game->man.y, 30, 30 };
   SDL_RenderCopyEx(renderer, game->marioFrames[game->man.animFrame], NULL, &rect, 0, NULL, (game->man.izq == 0));
 
+  
   ///dibuja a mario cuando muere
   if(game->man.muerto)
     {
@@ -833,7 +881,6 @@ void doRender(SDL_Renderer *renderer, GameState *game, int newBarril, int newLla
       SDL_RenderCopy(renderer, game->marioMuerto,
                        NULL, &rect);
     }
-
 
     }
 
@@ -964,6 +1011,19 @@ void createLlama(int newLlamas, GameState *game)
   
 }
 
+///Crea un barril que baja cada vez que se presiona el botón P
+void createBarrilBaja(int newBarrilBaja, int dy, GameState *game)
+{
+  int numero;
+  numero = rand() % 600; 
+  game->barrilBaja[newBarrilBaja].x = numero;
+  game->barrilBaja[newBarrilBaja].y = 120;
+  game->barrilBaja[newBarrilBaja].dy = dy;
+  game->barrilBaja[newBarrilBaja].barrilBajanFrame = 0;
+  
+  
+}
+
 ///Mueve a Pauline 
 void movePauline(GameState *game){
     game->pauline.x += game->pauline.dx;
@@ -979,6 +1039,15 @@ void movePauline(GameState *game){
       game->pauline.dx *= -1;
 
     }
+}
+
+///Mueve el barril que cae en y
+void moveBarrilBaja(int newBarrilBaja ,GameState *game){
+  int i;
+  for (int i = 0; i < newBarrilBaja; i++)
+  {
+    game->barrilBaja[i].y += game->barrilBaja[i].dy;
+  }
 }
 
 int barrel_event(char *buffer) {
@@ -1024,7 +1093,7 @@ void send_info(int sockfd, GameState *game, int *newBarril)
     write(sockfd, buffer, sizeof(buffer));
     bzero(buffer, sizeof(buffer));
     read(sockfd, buffer, sizeof(buffer));
-    printf("Mensaje del servidor: %s\n", buffer);
+    //printf("Mensaje del servidor: %s\n", buffer);
 
     if(barrel_event(buffer) == 1) {
       *newBarril = *newBarril + 1; 
@@ -1103,9 +1172,12 @@ int main(int argc, char *argv[])
   ///Variables para crear barriles
   int temporalBarril = 0;
   int newBarril = 0;
-  ///Variabls para crear llamas
+  ///Variables para crear llamas
   int temporalLlama = 0;
   int newLlama = 0;
+  ///Variables para crear barriles que bajan
+  int temporalBarrilBaja = 0;
+  int newBarrilBaja = 0;
 
   /// Loop del evento principal del juego
   while(!done)
@@ -1114,7 +1186,7 @@ int main(int argc, char *argv[])
     send_info(sockfd, &gameState, &temporalBarril);
     
     ///Verifica eventos
-    done = processEvents(window, &gameState, &temporalBarril, &temporalLlama);
+    done = processEvents(window, &gameState, &temporalBarril, &temporalLlama, &temporalBarrilBaja);
 
     ///Verifica  que los como se crean lo barriles para saber cuantos se deben pintar
     if (temporalBarril > 0 && newBarril < NUM_BARRILES) 
@@ -1134,19 +1206,30 @@ int main(int argc, char *argv[])
       temporalLlama = 0;
     }
 
+    ///Verifica como se crean los barriles que bajan para saber cuantos se deben pintar
+    if (temporalBarrilBaja > 0 && newBarrilBaja < NUM_BARRIL_BAJA) 
+    {
+      ///init llama
+      createBarrilBaja(newBarrilBaja, 1, &gameState);
+      newBarrilBaja += 1;
+      temporalBarrilBaja = 0;
+    }
+
     ///Llama al metodo process que nos permite crear las animaciones de movimiento
-    process(newBarril, newLlama, &gameState);
+    process(newBarril, newLlama, newBarrilBaja, &gameState);
     ///Llama al metodo que verifica colosiones entre objetos
     collisionDetect(&gameState);
 
     ///Llama al metodo que dezplega el render
-    doRender(renderer, &gameState, newBarril, newLlama);
+    doRender(renderer, &gameState, newBarril, newLlama, newBarrilBaja);
 
     ///Llama el método para rodar barril
     moveBarril(newBarril, &gameState);
 
     ///Llama el método para mover llamas
     moveLlamas(newLlama, &gameState);
+
+    moveBarrilBaja(newBarrilBaja, &gameState);
 
     ///Mover Pauline 
     movePauline(&gameState);
