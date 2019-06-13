@@ -486,14 +486,23 @@ void collisionDetect(GameState *game)
     }
   }
 
-  //for (int i = 0; i < NUM_LLAMAS; i++){
-    //for (int j = 0; i < NUM_ESCALERAS; j++){
-      //if(collide2d(game->llamas[i].x, game->llamas[i].y, game->escaleras[j].x-10, game->escaleras[j].y, 20, 20, 20, 50))
-    //{
-      //game->llamas[i].gravedad = 0;
-    //}
-    //}
-  //}
+  for (int i = 0; i < NUM_LLAMAS; i++){
+    for (int j = 0; j < NUM_ESCALERAS; j++){
+      if(collide2d(game->llamas[i].x, game->llamas[i].y, game->escaleras[j].x+20, game->escaleras[j].y, 20, 20, 30, 40))
+    {
+      game->llamas[i].gravedad = 0;
+      game->llamas[i].dx = 0;
+      if(game->time % 2 == 0){
+        game->llamas[i].y += -1;
+      }
+      
+      
+    }
+     
+    
+    }
+    
+  }
 
   ///Verifica choque de mario con pauline
   if(collide2d(game->man.x, game->man.y, game->pauline.x, game->pauline.y, 30, 30, 30, 30))
@@ -939,6 +948,7 @@ void createLlama(int newLlamas, GameState *game)
   game->llamas[newLlamas].dy = 0;
   game->llamas[newLlamas].llamaFrame = 0;
   game->llamas[newLlamas].gravedad = 1;
+  
 }
 
 ///Mueve a Pauline 
