@@ -15,6 +15,29 @@
 #define FALSE 0
 #define PORT 8888
 
+void update_game_positions(char *buffer, float *posx, float *posy) {
+    int i = 2;
+    int xcount = 0;
+    int ycount = 0;
+    char x[10];
+    char y[10];
+    while(buffer[i] != '/') {
+        x[xcount] = buffer[i];
+        i++;
+        xcount++;
+    }
+    i++;
+    printf("%c", buffer[i]);
+    while(buffer[i] != '\0') {
+        y[ycount] = buffer[i];
+        i++;
+        ycount++;
+    }
+    
+    *posx = (float)atof(x);
+    *posy = (float)atof(y);
+}
+
 int main(int argc , char *argv[])
 {
     int opt = TRUE;
@@ -28,11 +51,13 @@ int main(int argc , char *argv[])
     //set of socket descriptors
     fd_set readfds;
 
-    //server messages
-    char *hello_message = "0\n";
-    char *game_info = "1/Info procesada\n";
+    //positions
+    char positions[500];
 
     //server variables
+    char barreltype = '0';
+    float posx = 0;
+    float posy = 0;
 
     //initialise all client_socket[] to 0 so not checked
     for (i = 0; i < max_clients; i++)
@@ -141,8 +166,7 @@ int main(int argc , char *argv[])
             for (i = 0; i < max_clients; i++)
             {
                 //if position is empty
-                if( client_socket[i] == 0 )
-                {
+                if(client_socket[i] == 0) {
                     client_socket[i] = new_socket;
                     printf("Agregando a la lista de sockets como: %d\n" , i);
 
@@ -169,7 +193,7 @@ int main(int argc , char *argv[])
                            inet_ntoa(address.sin_addr) , ntohs(address.sin_port));
 
                     //Close the socket and mark as 0 in list for reuse
-                    close( sd );
+                    close(sd);
                     client_socket[i] = 0;
                 }
 
@@ -183,8 +207,17 @@ int main(int argc , char *argv[])
                     
                     //Se recibe info del juego
                     if(buffer[0] == '1'){
-                        //Process info
-                        send(sd, game_info, strlen(game_info), 0);
+                        update_game_positions(buffer, &posx, &posy);
+                        printf("Se han actualizado las posiciones en X (%f) y en Y (%f)\n", posx, posy);
+                        int i = 0;
+                        while(buffer[i] != '\0') {
+                            positions[i] = buffer[i];
+                            i++;
+                        }
+                        positions[i] = '/';
+                        positions[i + 1] = barreltype;
+                        positions[i + 2] = '\0';
+                        send(sd, positions, strlen(positions), 0);
                     } else {
                         char *ukn_command = "No reconozco ese comando\n";
                         send(sd, ukn_command, strlen(ukn_command), 0);
