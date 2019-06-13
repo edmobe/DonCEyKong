@@ -68,7 +68,12 @@ int main() {
         if(strncmp(tipo, "1") == 0) {
             // Da al informacion del barril al servidor
             send_barrel(sockfd, tipo[0]);
-        } else {
+        } 
+	else if(strncmp(tipo, "2") == 0) {
+            // Da al informacion del barril al servidor
+            send_barrel(sockfd, tipo[0]);
+        }
+	else {
             printf("Comando desconocido\n");
         }
     }

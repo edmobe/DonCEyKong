@@ -1058,11 +1058,17 @@ int barrel_event(char *buffer) {
   if(buffer[n-1] == '1') {
     return 1;
   }
+  else if(buffer[n-1] == '2') {
+    return 2;
+  }
+  else if(buffer[n-1] == '3') {
+    return 3;
+  }
   return 0;
 }
 
 // Da la informacion del juego al servidor
-void send_info(int sockfd, GameState *game, int *newBarril)
+void send_info(int sockfd, GameState *game, int *newBarril, int *newBarrilBaja)
 {
     printf("Mensaje a enviar: ");
     char buffer[MAX];
@@ -1093,10 +1099,13 @@ void send_info(int sockfd, GameState *game, int *newBarril)
     write(sockfd, buffer, sizeof(buffer));
     bzero(buffer, sizeof(buffer));
     read(sockfd, buffer, sizeof(buffer));
-    //printf("Mensaje del servidor: %s\n", buffer);
+    printf("Mensaje del servidor: %s\n", buffer);
 
     if(barrel_event(buffer) == 1) {
       *newBarril = *newBarril + 1; 
+    }
+    else if(barrel_event(buffer) == 2) {
+      *newBarrilBaja = *newBarrilBaja + 1; 
     }
 
     if ((strncmp(buffer, "exit", 4)) == 0) {
@@ -1183,7 +1192,7 @@ int main(int argc, char *argv[])
   while(!done)
   {
     // Da al informacion del juego al servidor
-    send_info(sockfd, &gameState, &temporalBarril);
+    send_info(sockfd, &gameState, &temporalBarril, &temporalBarrilBaja);
     
     ///Verifica eventos
     done = processEvents(window, &gameState, &temporalBarril, &temporalLlama, &temporalBarrilBaja);
