@@ -1019,6 +1019,8 @@ void moveBarril(int newBarril ,GameState *game){
 
 ///Metodo encargado de mover los barriles
 void moveBarrilMix(int newBarrilMix ,GameState *game){
+  int numero;
+  numero = rand() % 20; 
 
   //Verifica colision con el suelo
   for(int i = 0; i < 135; i++)
@@ -1026,22 +1028,44 @@ void moveBarrilMix(int newBarrilMix ,GameState *game){
     float mw = 25, mh = 25;
     for (int j = 0; j < newBarrilMix; j++)
     {
-      float mx = game->barrilMix[j].x, my = game->barrilMix[j].y;
-      float bx = game->piso[i].x, by = game->piso[i].y, bw = game->piso[i].w, bh = game->piso[i].h;
-  
-      if(mx+mw > bx && mx<bx+bw)
-      {
-        ///Estamos callendo en el suelo
-        if(my+mh > by && my < by && game->barrilMix[j].dy > 0)
-        {
-          ///corrige y
-          game->barrilMix[j].y = by-mh;
-          my = by-mh;
-          game->barrilMix[j].dy = 0;
 
-        }
+      if(numero < 10 && game->barrilMix[j].controlador == 0){
+        game->barrilMix[j].mix = 0;
       }
-    } 
+
+      else if(game->barrilMix[j].mix == 1)
+        {
+        float mx = game->barrilMix[j].x, my = game->barrilMix[j].y;
+        float bx = game->piso[i].x, by = game->piso[i].y, bw = game->piso[i].w, bh = game->piso[i].h;
+    
+        if(mx+mw > bx && mx<bx+bw)
+        {
+          ///Estamos callendo en el suelo
+          if(my+mh > by && my < by && game->barrilMix[j].dy > 0)
+          {
+            ///corrige y
+            game->barrilMix[j].y = by-mh;
+            my = by-mh;
+            game->barrilMix[j].dy = 0;
+
+          }
+        }
+      } 
+      else if(game->barrilMix[j].mix == 0)
+        {
+          if(game->barrilMix[j].controlador <= 5){
+            game->barrilMix[j].y += 2;
+            game->barrilMix[j].controlador += 1;
+          }
+          else
+          {
+            game->barrilMix[j].mix = 1;
+            game->barrilMix[j].controlador = 0;
+          }
+          
+          
+        }
+    }
 
   }
   ///Encargada de que los barriles no se salgan de la pantalla
@@ -1136,7 +1160,7 @@ void createLlama(int newLlamas, GameState *game)
 void createBarrilBaja(int newBarrilBaja, int dy, GameState *game)
 {
   int numero;
-  numero = rand() % 600; 
+  numero = rand() % 595; 
   game->barrilBaja[newBarrilBaja].x = numero;
   game->barrilBaja[newBarrilBaja].y = 120;
   game->barrilBaja[newBarrilBaja].dy = dy;
@@ -1151,6 +1175,7 @@ void createBarrilMix(int newBarrilMix, GameState *game){
   game->barrilMix[newBarrilMix].barrilMixFrame = 0;
   game->barrilMix[newBarrilMix].dx = 1;
   game->barrilMix[newBarrilMix].dy = 0;
+  game->barrilMix[newBarrilMix].controlador = 0;
 }
 
 ///Mueve a Pauline 

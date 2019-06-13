@@ -64,7 +64,7 @@ typedef struct
 ///Barril Mix
 typedef struct
 {
-    int x, y, barrilMixFrame, mix, animation;
+    int x, y, barrilMixFrame, mix, animation, controlador;
     float dy, dx;
 }BarrilMix;
 
