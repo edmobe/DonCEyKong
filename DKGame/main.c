@@ -26,10 +26,35 @@ void loadGame(GameState *game)
 {
   SDL_Surface *surface = NULL;
 
-  ///Carga la imagen del barril 1 y crea texturas con el render a partir de ella
+  ///Carga la imagen del barril 3y crea texturas con el render a partir de ella
   surface = IMG_Load("media/barril3.png");
   game->barril = SDL_CreateTextureFromSurface(game->renderer, surface);
+
+  ///Carga la imagen del barril 7 y crea texturas con el render a partir de ella
+  surface = IMG_Load("media/barril7.png");
+  game->barrilMixFrames[0] = SDL_CreateTextureFromSurface(game->renderer, surface);
   SDL_FreeSurface(surface);
+  //Carga la imagen del barril 8 y crea texturas con el render a partir de ella
+  surface = IMG_Load("media/barril8.png");
+  game->barrilMixFrames[1] = SDL_CreateTextureFromSurface(game->renderer, surface);
+  SDL_FreeSurface(surface);
+  ///Carga la imagen del barril 1 y crea texturas con el render a partir de ella
+  surface = IMG_Load("media/barril3.png");
+  game->barrilMixFrames[2] = SDL_CreateTextureFromSurface(game->renderer, surface);
+  SDL_FreeSurface(surface);
+  ///Carga la imagen del barril 4 y crea texturas con el render a partir de ella
+  surface = IMG_Load("media/barril4.png");
+  game->barrilMixFrames[3] = SDL_CreateTextureFromSurface(game->renderer, surface);
+  SDL_FreeSurface(surface);
+  ///Carga la imagen del barril 5 y crea texturas con el render a partir de ella
+  surface = IMG_Load("media/barril5.png");
+  game->barrilMixFrames[4] = SDL_CreateTextureFromSurface(game->renderer, surface);
+  SDL_FreeSurface(surface);
+  ///Carga la imagen del barril 6 y crea texturas con el render a partir de ella
+  surface = IMG_Load("media/barril6.png");
+  game->barrilMixFrames[5] = SDL_CreateTextureFromSurface(game->renderer, surface);
+  SDL_FreeSurface(surface);
+
 
   ///Carga la imagen del barril 1 y crea texturas con el render a partir de ella
   surface = IMG_Load("media/barril1.png");
@@ -75,10 +100,12 @@ void loadGame(GameState *game)
   ///Carga la imagen del barril 7 y crea texturas con el render a partir de ella
   surface = IMG_Load("media/barril7.png");
   game->barrilBajaFrames[0] = SDL_CreateTextureFromSurface(game->renderer, surface);
+  //game->barrilMixFrames[0] = SDL_CreateTextureFromSurface(game->renderer, surface);
   SDL_FreeSurface(surface);
    ///Carga la imagen del barril 8 y crea texturas con el render a partir de ella
   surface = IMG_Load("media/barril8.png");
   game->barrilBajaFrames[1] = SDL_CreateTextureFromSurface(game->renderer, surface);
+  //game->barrilMixFrames[1] = SDL_CreateTextureFromSurface(game->renderer, surface);
   SDL_FreeSurface(surface);
 
 
@@ -299,7 +326,7 @@ void loadGame(GameState *game)
 
 ///Metodo que nos permite realizar animaciones con las imagenes
 ///recibe un gameState
-void process(int newBarril, int newLlama, int newBarrilBaja, GameState *game)
+void process(int newBarril, int newLlama, int newBarrilBaja, int newBarrilMix, GameState *game)
 {
   ///a�ade tiempo, para hacer las animaciones por frames
   game->time++;
@@ -390,6 +417,38 @@ void process(int newBarril, int newLlama, int newBarrilBaja, GameState *game)
       }
       }
 
+      //Animación de los barriles mix
+      for(int i = 0; i < newBarrilMix; i++){
+      if (game->time % 8 == 0 && game->barrilMix[i].mix == 0){
+        if(game->barrilMix[i].barrilMixFrame == 0 || game->barrilMix[i].barrilMixFrame == 2 || game->barrilMix[i].barrilMixFrame == 3 || game->barrilMix[i].barrilMixFrame == 4 || game->barrilMix[i].barrilMixFrame == 5) 
+          {
+            game->barrilMix[i].barrilMixFrame = 1;
+                   
+          }
+          else
+          {
+            game->barrilMix[i].barrilMixFrame = 0;
+          }
+      }
+      if (game->time % 8 == 0 && game->barrilMix[i].mix == 1){
+        if(game->barrilMix[i].barrilMixFrame == 0 || game->barrilMix[i].barrilMixFrame == 1 || game->barrilMix[i].barrilMixFrame == 5 )
+          {
+            game->barrilMix[i].barrilMixFrame = 2;
+                   
+          }
+          if(game->barrilMix[i].barrilMixFrame == 2){
+            game->barrilMix[i].barrilMixFrame = 3;
+          }
+          if(game->barrilMix[i].barrilMixFrame == 3){
+            game->barrilMix[i].barrilMixFrame = 4;
+          }
+          else
+          {
+            game->barrilMix[i].barrilMixFrame = 5;
+          }
+      }
+      }
+
       ///Animación de los Barriles que bajan
       for(int i = 0; i < newBarrilBaja; i++){
         if (game->time % 8 == 0){
@@ -440,6 +499,9 @@ void process(int newBarril, int newLlama, int newBarrilBaja, GameState *game)
           game->llamas[i].dy += GRAVEDAD;
         }
         
+      }
+      for (int i = 0; i < newBarrilMix; i++){
+        game->barrilMix[i].dy += GRAVEDAD;
       }
     
        
@@ -638,7 +700,7 @@ void collisionDetect(GameState *game)
 
 ///Metodo que verifica los posibles eventos que pueden pasar en el juego
 ///Recibe una ventana y un gameState para verificar los eventos
-int processEvents(SDL_Window *window, GameState *game, int *newBarril, int *newLlamas, int *newBarrilBaja)
+int processEvents(SDL_Window *window, GameState *game, int *newBarril, int *newLlamas, int *newBarrilBaja, int *newBarrilMix)
 {
   ///Se llama a una funcion de SDL que nos facilita la verificacion de eventos
   SDL_Event event;
@@ -736,6 +798,12 @@ int processEvents(SDL_Window *window, GameState *game, int *newBarril, int *newL
     
     *newBarrilBaja = *newBarrilBaja + 1; 
   }
+  ///Tecla para lanzar barrilMIx
+  if(state[SDL_SCANCODE_O])
+  {
+    
+    *newBarrilMix = *newBarrilMix + 1; 
+  }
     
   if(!(state[SDL_SCANCODE_UP]))
   {
@@ -795,7 +863,7 @@ int processEvents(SDL_Window *window, GameState *game, int *newBarril, int *newL
 
 ///Metodo para dibujar en pantalla todo lo que sea solicitado
 ///Recibe un render y un gameState
-void doRender(SDL_Renderer *renderer, GameState *game, int newBarril, int newLlama, int newBarrilBaja)
+void doRender(SDL_Renderer *renderer, GameState *game, int newBarril, int newLlama, int newBarrilBaja, int newBarrilMix)
 {
     int i;
     ///si el juego esta en estado vidas
@@ -869,6 +937,13 @@ void doRender(SDL_Renderer *renderer, GameState *game, int newBarril, int newLla
     SDL_RenderCopy(renderer, game->barrilBajaFrames[game->barrilBaja[i].barrilBajanFrame], NULL, &BarrilBajaRect);
   }
 
+  ///Dibuja las barriles mix
+  for (i = 0; i < newBarrilMix; i++)
+  {
+    SDL_Rect BarrilMixRect = { game->barrilMix[i].x, game->barrilMix[i].y, 20, 20 };
+    SDL_RenderCopy(renderer, game->barrilMixFrames[game->barrilMix[i].barrilMixFrame], NULL, &BarrilMixRect);
+  }
+
   ///dibujando a mario
   SDL_Rect rect = {game->man.x, game->man.y, 30, 30 };
   SDL_RenderCopyEx(renderer, game->marioFrames[game->man.animFrame], NULL, &rect, 0, NULL, (game->man.izq == 0));
@@ -937,6 +1012,52 @@ void moveBarril(int newBarril ,GameState *game){
   ///Verifica que el barill no se salga por la izquierda
     if (game->barriles[i].x <= 0){
       game->barriles[i].dx *= -1;
+
+    }
+  }
+}
+
+///Metodo encargado de mover los barriles
+void moveBarrilMix(int newBarrilMix ,GameState *game){
+
+  //Verifica colision con el suelo
+  for(int i = 0; i < 135; i++)
+  {
+    float mw = 25, mh = 25;
+    for (int j = 0; j < newBarrilMix; j++)
+    {
+      float mx = game->barrilMix[j].x, my = game->barrilMix[j].y;
+      float bx = game->piso[i].x, by = game->piso[i].y, bw = game->piso[i].w, bh = game->piso[i].h;
+  
+      if(mx+mw > bx && mx<bx+bw)
+      {
+        ///Estamos callendo en el suelo
+        if(my+mh > by && my < by && game->barrilMix[j].dy > 0)
+        {
+          ///corrige y
+          game->barrilMix[j].y = by-mh;
+          my = by-mh;
+          game->barrilMix[j].dy = 0;
+
+        }
+      }
+    } 
+
+  }
+  ///Encargada de que los barriles no se salgan de la pantalla
+  for (int i = 0; i < newBarrilMix; i++)
+  {
+    game->barrilMix[i].x += game->barrilMix[i].dx;
+    game->barrilMix[i].y += game->barrilMix[i].dy;
+
+  ///Verifica que el barril no se salga por la derecha
+    if (game->barrilMix[i].x >= 600){
+      game->barrilMix[i].dx *= -1;
+        
+    }
+  ///Verifica que el barill no se salga por la izquierda
+    if (game->barrilMix[i].x <= 0){
+      game->barrilMix[i].dx *= -1;
 
     }
   }
@@ -1023,6 +1144,14 @@ void createBarrilBaja(int newBarrilBaja, int dy, GameState *game)
   
   
 }
+void createBarrilMix(int newBarrilMix, GameState *game){
+  game->barrilMix[newBarrilMix].x = 100;
+  game->barrilMix[newBarrilMix].y = 120;
+  game->barrilMix[newBarrilMix].mix = 1;
+  game->barrilMix[newBarrilMix].barrilMixFrame = 0;
+  game->barrilMix[newBarrilMix].dx = 1;
+  game->barrilMix[newBarrilMix].dy = 0;
+}
 
 ///Mueve a Pauline 
 void movePauline(GameState *game){
@@ -1068,7 +1197,7 @@ int barrel_event(char *buffer) {
 }
 
 // Da la informacion del juego al servidor
-void send_info(int sockfd, GameState *game, int *newBarril, int *newBarrilBaja)
+void send_info(int sockfd, GameState *game, int *newBarril, int *newBarrilBaja, int *newBarrilMix)
 {
     printf("Mensaje a enviar: ");
     char buffer[MAX];
@@ -1106,6 +1235,9 @@ void send_info(int sockfd, GameState *game, int *newBarril, int *newBarrilBaja)
     }
     else if(barrel_event(buffer) == 2) {
       *newBarrilBaja = *newBarrilBaja + 1; 
+    }
+    else if(barrel_event(buffer) == 3) {
+      *newBarrilMix = *newBarrilMix + 1; 
     }
 
     if ((strncmp(buffer, "exit", 4)) == 0) {
@@ -1187,15 +1319,18 @@ int main(int argc, char *argv[])
   ///Variables para crear barriles que bajan
   int temporalBarrilBaja = 0;
   int newBarrilBaja = 0;
+  ///Variables para crear barriles mix 
+  int temporalBarrilMix = 0;
+  int newBarrilMix = 0;
 
   /// Loop del evento principal del juego
   while(!done)
   {
     // Da al informacion del juego al servidor
-    send_info(sockfd, &gameState, &temporalBarril, &temporalBarrilBaja);
+    send_info(sockfd, &gameState, &temporalBarril, &temporalBarrilBaja, &temporalBarrilMix);
     
     ///Verifica eventos
-    done = processEvents(window, &gameState, &temporalBarril, &temporalLlama, &temporalBarrilBaja);
+    done = processEvents(window, &gameState, &temporalBarril, &temporalLlama, &temporalBarrilBaja, &temporalBarrilMix);
 
     ///Verifica  que los como se crean lo barriles para saber cuantos se deben pintar
     if (temporalBarril > 0 && newBarril < NUM_BARRILES) 
@@ -1223,17 +1358,28 @@ int main(int argc, char *argv[])
       newBarrilBaja += 1;
       temporalBarrilBaja = 0;
     }
+    ///Verifica como se crean los barriles mix para saber cuantos se deben pintar
+    if (temporalBarrilMix > 0 && newBarrilMix < NUM_BARRIL_BAJA) 
+    {
+      ///init llama
+      createBarrilMix(newBarrilMix, &gameState);
+      newBarrilMix += 1;
+      temporalBarrilMix = 0;
+    }
 
     ///Llama al metodo process que nos permite crear las animaciones de movimiento
-    process(newBarril, newLlama, newBarrilBaja, &gameState);
+    process(newBarril, newLlama, newBarrilBaja, newBarrilMix, &gameState);
     ///Llama al metodo que verifica colosiones entre objetos
     collisionDetect(&gameState);
 
     ///Llama al metodo que dezplega el render
-    doRender(renderer, &gameState, newBarril, newLlama, newBarrilBaja);
+    doRender(renderer, &gameState, newBarril, newLlama, newBarrilBaja, newBarrilMix);
 
     ///Llama el método para rodar barril
     moveBarril(newBarril, &gameState);
+
+    ///Llama al método moverBarrilMix
+    moveBarrilMix(newBarrilMix, &gameState);
 
     ///Llama el método para mover llamas
     moveLlamas(newLlama, &gameState);

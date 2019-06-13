@@ -10,6 +10,7 @@
 #define NUM_PISO 135
 #define NUM_BARRILES 15
 #define NUM_BARRIL_BAJA 15
+#define NUM_BARRIL_MIX 15
 #define NUM_ESCALERAS 12
 #define NUM_LLAMAS 50
 
@@ -60,6 +61,13 @@ typedef struct
     float dy;
 }BarrilBajan;
 
+///Barril Mix
+typedef struct
+{
+    int x, y, barrilMixFrame, mix, animation;
+    float dy, dx;
+}BarrilMix;
+
 ///Estructura de las llamas
 typedef struct 
 {
@@ -106,10 +114,14 @@ typedef struct
   ///Barriles que bajan
   BarrilBajan barrilBaja[NUM_BARRIL_BAJA];
 
+  ///Barriles mix
+  BarrilMix barrilMix[NUM_BARRIL_MIX];
+
   ///Escalera
   Escalera escaleras[NUM_ESCALERAS];
 
   ///Images
+  SDL_Texture *barrilMixFrames[6];
   SDL_Texture *barrilBajaFrames[2];
   SDL_Texture *llamaFrames[5];
   SDL_Texture *paulineFrames[5];
