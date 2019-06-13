@@ -52,6 +52,26 @@ void loadGame(GameState *game)
   game->paulineFrames[3] = SDL_CreateTextureFromSurface(game->renderer, surface);
   SDL_FreeSurface(surface);
 
+
+  ///Carga la imagen de la llama 1 y crea texturas con el render a partir de ella
+  surface = IMG_Load("media/llama1.png");
+  game->llamaFrames[0] = SDL_CreateTextureFromSurface(game->renderer, surface);
+  SDL_FreeSurface(surface);
+   ///Carga la imagen de llama 2 y crea texturas con el render a partir de ella
+  surface = IMG_Load("media/llama2.png");
+  game->llamaFrames[1] = SDL_CreateTextureFromSurface(game->renderer, surface);
+  SDL_FreeSurface(surface);
+   ///Carga la imagen de llama 3 y crea texturas con el render a partir de ella
+  surface = IMG_Load("media/llama3.png");
+  game->llamaFrames[2] = SDL_CreateTextureFromSurface(game->renderer, surface);
+  SDL_FreeSurface(surface);
+   ///Carga la imagen de llama 4 y crea texturas con el render a partir de ella
+  surface = IMG_Load("media/llama4.png");
+  game->llamaFrames[3] = SDL_CreateTextureFromSurface(game->renderer, surface);
+  SDL_FreeSurface(surface);
+
+
+
   ///Carga la imagen del barril 1 y crea texturas con el render a partir de ella
   surface = IMG_Load("media/barril2.png");
   game->estanonFrames[1] = SDL_CreateTextureFromSurface(game->renderer, surface);
@@ -269,7 +289,7 @@ void loadGame(GameState *game)
 
 ///Metodo que nos permite realizar animaciones con las imagenes
 ///recibe un gameState
-void process(int newBarril, GameState *game)
+void process(int newBarril, int newLlama, GameState *game)
 {
   ///a�ade tiempo, para hacer las animaciones por frames
   game->time++;
@@ -334,6 +354,32 @@ void process(int newBarril, GameState *game)
           }
       }
 
+      ///Animación de las llamas
+      for(int i = 0; i < newLlama; i++){
+      if (game->time % 8 == 0 && game->llamas[i].dx < 0){
+        if(game->llamas[i].llamaFrame == 0 || game->llamas[i].llamaFrame == 3)
+          {
+            game->llamas[i].llamaFrame = 1;
+                   
+          }
+          else
+          {
+            game->llamas[i].llamaFrame = 0;
+          }
+      }
+      if (game->time % 8 == 0 && game->llamas[i].dx > 0){
+        if(game->llamas[i].llamaFrame == 0 || game->llamas[i].llamaFrame == 3)
+          {
+            game->llamas[i].llamaFrame = 2;
+                   
+          }
+          else
+          {
+            game->llamas[i].llamaFrame = 3;
+          }
+      }
+      }
+
       ///Animación de mario muerto
       if(!game->man.muerto)
       {
@@ -363,6 +409,12 @@ void process(int newBarril, GameState *game)
        
       for (int i = 0; i < newBarril; i++){
         game->barriles[i].dy += GRAVEDAD;
+      }
+      for (int i = 0; i < newLlama; i++){
+        if(game->llamas[i].gravedad == 1){
+          game->llamas[i].dy += GRAVEDAD;
+        }
+        
       }
     
        
@@ -434,6 +486,16 @@ void collisionDetect(GameState *game)
     }
   }
 
+  //for (int i = 0; i < NUM_LLAMAS; i++){
+    //for (int j = 0; i < NUM_ESCALERAS; j++){
+      //if(collide2d(game->llamas[i].x, game->llamas[i].y, game->escaleras[j].x-10, game->escaleras[j].y, 20, 20, 20, 50))
+    //{
+      //game->llamas[i].gravedad = 0;
+    //}
+    //}
+  //}
+
+  ///Verifica choque de mario con pauline
   if(collide2d(game->man.x, game->man.y, game->pauline.x, game->pauline.y, 30, 30, 30, 30))
   {
         init_game_win(game);
@@ -522,7 +584,7 @@ void collisionDetect(GameState *game)
 
 ///Metodo que verifica los posibles eventos que pueden pasar en el juego
 ///Recibe una ventana y un gameState para verificar los eventos
-int processEvents(SDL_Window *window, GameState *game, int *newBarril)
+int processEvents(SDL_Window *window, GameState *game, int *newBarril, int *newLlamas)
 {
   ///Se llama a una funcion de SDL que nos facilita la verificacion de eventos
   SDL_Event event;
@@ -620,6 +682,18 @@ int processEvents(SDL_Window *window, GameState *game, int *newBarril)
     game->man.up = 0;
   }
 
+    ///Tecla para lanzar llamas
+  if(state[SDL_SCANCODE_F])
+  {
+    
+    *newLlamas = *newLlamas + 1; 
+  }
+    
+  if(!(state[SDL_SCANCODE_UP]))
+  {
+    game->man.up = 0;
+  }
+
   ///Caminar de mario a la izquierda
   if(state[SDL_SCANCODE_LEFT])
   {
@@ -661,7 +735,7 @@ int processEvents(SDL_Window *window, GameState *game, int *newBarril)
 
 ///Metodo para dibujar en pantalla todo lo que sea solicitado
 ///Recibe un render y un gameState
-void doRender(SDL_Renderer *renderer, GameState *game, int newBarril)
+void doRender(SDL_Renderer *renderer, GameState *game, int newBarril, int newLlama)
 {
     ///si el juego esta en estado vidas
     if(game->statusState == STATUS_STATE_LIVES){
@@ -720,6 +794,12 @@ void doRender(SDL_Renderer *renderer, GameState *game, int newBarril)
     SDL_RenderCopy(renderer, game->barril, NULL, &barrilRect);
   }
   
+  ///Dibuja las llamas
+  for (int i = 0; i < newLlama; i++)
+  {
+    SDL_Rect llamaRect = { game->llamas[i].x, game->llamas[i].y, 20, 20 };
+    SDL_RenderCopy(renderer, game->llamaFrames[game->llamas[i].llamaFrame], NULL, &llamaRect);
+  }
 
   ///dibujando a mario
   SDL_Rect rect = {game->man.x, game->man.y, 30, 30 };
@@ -792,6 +872,52 @@ void moveBarril(int newBarril ,GameState *game){
 
     }
   }
+}
+
+  ///Mueve las llamas en diversos ciclos
+void moveLlamas(int newLlamas ,GameState *game){
+
+  //Verifica colision con el suelo
+  for(int i = 0; i < 135; i++)
+  {
+    float mw = 25, mh = 25;
+    for (int j = 0; j < newLlamas; j++)
+    {
+      float mx = game->llamas[j].x, my = game->llamas[j].y;
+      float bx = game->piso[i].x, by = game->piso[i].y, bw = game->piso[i].w, bh = game->piso[i].h;
+  
+      if(mx+mw > bx && mx<bx+bw)
+      {
+        ///Estamos callendo en el suelo
+        if(my+mh > by && my < by && game->llamas[j].dy > 0)
+        {
+          ///corrige y
+          game->llamas[j].y = by-mh;
+          my = by-mh;
+          game->llamas[j].dy = 0;
+
+        }
+      }
+    } 
+
+  }
+  ///Encargada de que las llamas no se salgan de la pantalla
+  for (int i = 0; i < newLlamas; i++)
+  {
+    game->llamas[i].x += game->llamas[i].dx;
+    game->llamas[i].y += game->llamas[i].dy;
+
+  ///Verifica que el llamas no se salga por la derecha
+    if (game->llamas[i].x >= 600){
+      game->llamas[i].dx *= -1;
+        
+    }
+  ///Verifica que el llamas no se salga por la izquierda
+    if (game->llamas[i].x <= 0){
+      game->llamas[i].dx *= -1;
+
+    }
+  }
 
 }
 
@@ -802,6 +928,17 @@ void createBarril(int newBarril, GameState *game)
   game->barriles[newBarril].y = 120;
   game->barriles[newBarril].dx = 1;
   game->barriles[newBarril].dy = 0;
+}
+
+///Crea una llama cada vez que se presiona el botón F
+void createLlama(int newLlamas, GameState *game)
+{
+  game->llamas[newLlamas].x = 50;
+  game->llamas[newLlamas].y = 620;
+  game->llamas[newLlamas].dx = 1;
+  game->llamas[newLlamas].dy = 0;
+  game->llamas[newLlamas].llamaFrame = 0;
+  game->llamas[newLlamas].gravedad = 1;
 }
 
 ///Mueve a Pauline 
@@ -924,8 +1061,12 @@ int main(int argc, char *argv[])
 
   /// Abre la ventana
   int done = 0;
-  int temporal = 0;
+  ///Variables para crear barriles
+  int temporalBarril = 0;
   int newBarril = 0;
+  ///Variabls para crear llamas
+  int temporalLlama = 0;
+  int newLlama = 0;
 
   /// Loop del evento principal del juego
   while(!done)
@@ -934,26 +1075,39 @@ int main(int argc, char *argv[])
     send_info(sockfd, &gameState);
     
     ///Verifica eventos
-    done = processEvents(window, &gameState, &temporal);
+    done = processEvents(window, &gameState, &temporalBarril, &temporalLlama);
 
     ///Verifica  que los como se crean lo barriles para saber cuantos se deben pintar
-    if (temporal > 0 && newBarril < 12) 
+    if (temporalBarril > 0 && newBarril < NUM_BARRILES) 
     {
       ///init barril
       createBarril(newBarril, &gameState);
       newBarril += 1;
-      temporal = 0;
+      temporalBarril = 0;
     }
+
+    ///Verifica como se crean las llamas para saber cuantos se deben pintar
+    if (temporalLlama > 0 && newLlama < NUM_LLAMAS) 
+    {
+      ///init llama
+      createLlama(newLlama, &gameState);
+      newLlama += 1;
+      temporalLlama = 0;
+    }
+
     ///Llama al metodo process que nos permite crear las animaciones de movimiento
-    process(newBarril, &gameState);
+    process(newBarril, newLlama, &gameState);
     ///Llama al metodo que verifica colosiones entre objetos
     collisionDetect(&gameState);
 
     ///Llama al metodo que dezplega el render
-    doRender(renderer, &gameState, newBarril);
+    doRender(renderer, &gameState, newBarril, newLlama);
 
     ///Llama el método para rodar barril
     moveBarril(newBarril, &gameState);
+
+    ///Llama el método para mover llamas
+    moveLlamas(newLlama, &gameState);
 
     ///Mover Pauline 
     movePauline(&gameState);

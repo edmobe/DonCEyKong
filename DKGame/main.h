@@ -10,6 +10,7 @@
 #define NUM_PISO 135
 #define NUM_BARRILES 15
 #define NUM_ESCALERAS 12
+#define NUM_LLAMAS 50
 
 #ifndef Tarea3_main_h
 #define Tarea3_main_h
@@ -51,6 +52,14 @@ typedef struct
     float dx, dy;
 }Barril;
 
+///Estructura de las llamas
+typedef struct 
+{
+  int x, y, llamaFrame;
+  float dx, dy;
+  int gravedad;
+}Llama;
+
 ///Estructura para la escalera
 typedef struct 
 {
@@ -75,6 +84,9 @@ typedef struct
   ///Pauline
   Pauline pauline;
 
+  ///Llama
+  Llama llamas[NUM_LLAMAS];
+
   ///Estañon de fuego
   Estanon estanon;
 
@@ -88,6 +100,7 @@ typedef struct
   Escalera escaleras[NUM_ESCALERAS];
 
   ///Images
+  SDL_Texture *llamaFrames[5];
   SDL_Texture *paulineFrames[5];
   SDL_Texture *barril;
   SDL_Texture *estanonFrames[2];
