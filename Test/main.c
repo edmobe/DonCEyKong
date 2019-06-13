@@ -1,5 +1,4 @@
 #include <stdio.h>
-#include <string.h> //strlen
 #include <stdlib.h>
 #include <errno.h>
 #include <unistd.h> //close
@@ -22,7 +21,6 @@ void update_game_info(char *buffer, char *barreltype, float *posx, float *posy) 
         xcount++;
     }
     i++;
-    printf("%c", buffer[i]);
     while(buffer[i] != '/') {
         y[ycount] = buffer[i];
         i++;
@@ -32,20 +30,28 @@ void update_game_info(char *buffer, char *barreltype, float *posx, float *posy) 
     *barreltype = buffer[i];
     *posx = (float)atof(x);
     *posy = (float)atof(y);
-
-    printf("--END--");
 }
 
 int main() {
-    char buffer[1025] = {'1', '/', '5', '3', '5', '.', '1', '5', '6', '/', '6', '1', '5', '.', '6', '6', '6', '6', '6', '/', '0'};
-    char barreltype;
-
+    char buffer[1025] = {'1', '/', '5', '3', '5', '.', '1', '5', '6', '/', '6', '1', '5', '.', '6', '6', '6', '6', '6', '/', '1'};
+    
+    char barreltype = '0';
     float posx = 0;
     float posy = 0;
 
-    barreltype = '0';
+    printf("===========Parametros iniciales===========\n");
+    printf("Tipo de barril: %c \n", barreltype);
+    printf("Posicion en X: %f \n", posx);
+    printf("Posicion en Y: %f \n\n", posy);
+
+    printf("==============Buffer (string)=============\n%s\n\n", buffer);
 
     update_game_info(buffer, &barreltype, &posx, &posy);
+
+    printf("====Informacion del juego actualizada!====\n");
+    printf("Tipo de barril: %c \n", barreltype);
+    printf("Posicion en X: %f \n", posx);
+    printf("Posicion en Y: %f \n\n", posy);
 
     return 0;
 }

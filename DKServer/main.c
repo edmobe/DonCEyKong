@@ -15,8 +15,8 @@
 #define FALSE 0
 #define PORT 8888
 
-void update_game_barrel(char* buffer, char* barreltype) {
-    *barreltype = buffer[2];
+void update_game_barrels(char* buffer, char* barrel_sent_game, char* barrel_sent_observer) {
+    *barrel_sent_game = *barrel_sent_observer = buffer[2];
 }
 
 void update_game_positions(char *buffer, float *posx, float *posy) {
@@ -59,7 +59,8 @@ int main(int argc , char *argv[])
     char positions[500];
 
     //server variables
-    char barreltype = '0';
+    char barrel_sent_game = '0';
+    char barrel_sent_observer = '0';
     float posx = 0;
     float posy = 0;
 
@@ -209,13 +210,15 @@ int main(int argc , char *argv[])
                     //of the data read
                     buffer[valread] = '\0';
                     
-                    //Se recibe info del juego
+                    //Si es un nuevo barril
                     if(buffer[0] == '0'){
-                        update_game_barrel(buffer, &barreltype);
-                        printf("Barril tipo %c recibido\n", barreltype);
+                        update_game_barrels(buffer, &barrel_sent_game, &barrel_sent_observer);
+                        printf("Barril tipo %c recibido\n", barrel_sent_game);
                         char* update_message = "Barril recibido";
                         send(sd, update_message, strlen(update_message), 0);
-                    } else if(buffer[0] == '1'){
+                    } 
+                    //Si el cliente Game solicita informacion del juego
+                    else if(buffer[0] == '1'){
                         update_game_positions(buffer, &posx, &posy);
                         printf("Se han actualizado las posiciones en X (%f) y en Y (%f)\n", posx, posy);
                         int i = 0;
@@ -224,11 +227,12 @@ int main(int argc , char *argv[])
                             i++;
                         }
                         positions[i] = '/';
-                        positions[i + 1] = barreltype;
+                        positions[i + 1] = barrel_sent_game;
                         positions[i + 2] = '\0';
                         send(sd, positions, strlen(positions), 0);
-                        if(barreltype != '0')
-                            barreltype = '0';
+                        //Si ya se envio el barril al cliente Game
+                        if(barrel_sent_game != '0')
+                            barrel_sent_game = '0';
                     } else {
                         char *ukn_command = "No reconozco ese comando\n";
                         send(sd, ukn_command, strlen(ukn_command), 0);
