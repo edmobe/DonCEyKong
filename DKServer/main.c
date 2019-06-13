@@ -15,6 +15,10 @@
 #define FALSE 0
 #define PORT 8888
 
+void update_game_barrel(char* buffer, char* barreltype) {
+    barreltype = buffer[2];
+}
+
 void update_game_positions(char *buffer, float *posx, float *posy) {
     int i = 2;
     int xcount = 0;
@@ -206,7 +210,11 @@ int main(int argc , char *argv[])
                     buffer[valread] = '\0';
                     
                     //Se recibe info del juego
-                    if(buffer[0] == '1'){
+                    if(buffer[0] == '0'){
+                        update_game_barrel(buffer, &barreltype);
+                        char* update_message = "Barril recibido";
+                        send(sd, update_message, strlen(update_message), 0);
+                    } else if(buffer[0] == '1'){
                         update_game_positions(buffer, &posx, &posy);
                         printf("Se han actualizado las posiciones en X (%f) y en Y (%f)\n", posx, posy);
                         int i = 0;
