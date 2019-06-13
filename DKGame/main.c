@@ -488,20 +488,32 @@ void collisionDetect(GameState *game)
 
   for (int i = 0; i < NUM_LLAMAS; i++){
     for (int j = 0; j < NUM_ESCALERAS; j++){
-      if(collide2d(game->llamas[i].x, game->llamas[i].y, game->escaleras[j].x+20, game->escaleras[j].y, 20, 20, 30, 40))
+      if(collide2d(game->llamas[i].x, game->llamas[i].y, game->escaleras[j].x+10, game->escaleras[j].y, 20, 20, 1, 40))
     {
       game->llamas[i].gravedad = 0;
       game->llamas[i].dx = 0;
       if(game->time % 2 == 0){
         game->llamas[i].y += -1;
+        if(!(collide2d(game->llamas[i].x, game->llamas[i].y, game->escaleras[j].x+10, game->escaleras[j].y, 20, 20, 1, 40)))
+          {
+            if(game->llamas[i].check > 0){
+              game->llamas[i].dx = -1;
+              game->llamas[i].check = -20;
+              game->llamas[i].gravedad = 1;
+
+            }
+            else
+            {
+              game->llamas[i].dx = 1;
+              game->llamas[i].check = 20;
+              game->llamas[i].gravedad = 1;
+            }
+            
+            
+        }
       }
-      
-      
     }
-     
-    
     }
-    
   }
 
   ///Verifica choque de mario con pauline
@@ -948,6 +960,7 @@ void createLlama(int newLlamas, GameState *game)
   game->llamas[newLlamas].dy = 0;
   game->llamas[newLlamas].llamaFrame = 0;
   game->llamas[newLlamas].gravedad = 1;
+  game->llamas[newLlamas].check = 1;
   
 }
 
@@ -980,7 +993,7 @@ int barrel_event(char *buffer) {
 }
 
 // Da la informacion del juego al servidor
-void send_info(int sockfd, GameState *game)
+void send_info(int sockfd, GameState *game, int *newBarril)
 {
     printf("Mensaje a enviar: ");
     char buffer[MAX];
@@ -1013,8 +1026,8 @@ void send_info(int sockfd, GameState *game)
     read(sockfd, buffer, sizeof(buffer));
     printf("Mensaje del servidor: %s\n", buffer);
 
-    if(barrel_event(buffer)) {
-      printf("BARRIL!!!!\n");
+    if(barrel_event(buffer) == 1) {
+      *newBarril = *newBarril + 1; 
     }
 
     if ((strncmp(buffer, "exit", 4)) == 0) {
@@ -1098,7 +1111,7 @@ int main(int argc, char *argv[])
   while(!done)
   {
     // Da al informacion del juego al servidor
-    send_info(sockfd, &gameState);
+    send_info(sockfd, &gameState, &temporalBarril);
     
     ///Verifica eventos
     done = processEvents(window, &gameState, &temporalBarril, &temporalLlama);

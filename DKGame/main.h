@@ -55,9 +55,8 @@ typedef struct
 ///Estructura de las llamas
 typedef struct 
 {
-  int x, y, llamaFrame;
+  int x, y, llamaFrame, gravedad, check;
   float dx, dy;
-  int gravedad, collide;
 }Llama;
 
 ///Estructura para la escalera
