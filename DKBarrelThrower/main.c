@@ -61,6 +61,8 @@ int main() {
     while(1) {
         printf("\n-------Favor indique el tipo de barril-------\n");
         printf("1: Barril normal\n");
+	printf("2: Barril caida libre\n");
+	printf("3: Barriles mix\n");
         printf(">>> ");
         scanf("%s", tipo);
         if(strncmp(tipo, "1") == 0) {
