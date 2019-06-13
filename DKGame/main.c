@@ -968,6 +968,17 @@ void movePauline(GameState *game){
     }
 }
 
+int barrel_event(char *buffer) {
+  int n = 0;
+  while(buffer[n] != '\0'){
+    n++;
+  }
+  if(buffer[n-1] == '1') {
+    return 1;
+  }
+  return 0;
+}
+
 // Da la informacion del juego al servidor
 void send_info(int sockfd, GameState *game)
 {
@@ -1001,6 +1012,11 @@ void send_info(int sockfd, GameState *game)
     bzero(buffer, sizeof(buffer));
     read(sockfd, buffer, sizeof(buffer));
     printf("Mensaje del servidor: %s\n", buffer);
+
+    if(barrel_event(buffer)) {
+      printf("BARRIL!!!!\n");
+    }
+
     if ((strncmp(buffer, "exit", 4)) == 0) {
         printf("El cliente ha salido...\n");
     }

@@ -16,7 +16,7 @@
 #define PORT 8888
 
 void update_game_barrel(char* buffer, char* barreltype) {
-    barreltype = buffer[2];
+    *barreltype = buffer[2];
 }
 
 void update_game_positions(char *buffer, float *posx, float *posy) {
@@ -212,6 +212,7 @@ int main(int argc , char *argv[])
                     //Se recibe info del juego
                     if(buffer[0] == '0'){
                         update_game_barrel(buffer, &barreltype);
+                        printf("Barril tipo %c recibido\n", barreltype);
                         char* update_message = "Barril recibido";
                         send(sd, update_message, strlen(update_message), 0);
                     } else if(buffer[0] == '1'){
@@ -226,6 +227,8 @@ int main(int argc , char *argv[])
                         positions[i + 1] = barreltype;
                         positions[i + 2] = '\0';
                         send(sd, positions, strlen(positions), 0);
+                        if(barreltype != '0')
+                            barreltype = '0';
                     } else {
                         char *ukn_command = "No reconozco ese comando\n";
                         send(sd, ukn_command, strlen(ukn_command), 0);
