@@ -320,7 +320,7 @@ void loadGame(GameState *game)
 
 ///Metodo que nos permite realizar animaciones con las imagenes
 ///recibe un gameState
-void process(int newBarril, int newLlama, int newBarrilBaja, int newBarrilMix, GameState *game)
+void process(int newBarril, int newLlama, int newBarrilBaja, int newBarrilMix, GameState *game, int *newLlam, int *newBarri, int *newBarrilBaj, int *newBarrilMi)
 {
   ///a�ade tiempo, para hacer las animaciones por frames
   game->time++;
@@ -547,6 +547,10 @@ void process(int newBarril, int newLlama, int newBarrilBaja, int newBarrilMix, G
           game->man.dx = 0;
           game->man.dy = 0;
           game->man.enSuelo = 0;
+          *newBarri=0;
+          *newBarrilBaj=0;
+          *newBarrilMi=0;
+          *newLlam=0;
         }
         else
         {
@@ -574,7 +578,7 @@ int collide2d(float x1, float y1, float x2, float y2, float wt1, float ht1, floa
 
 ///Metodo para verificar las colisiones
 ///Recibe un gameState
-void collisionDetect(int *newLlama, GameState *game, int *newBarril)
+void collisionDetect(int *newLlama, GameState *game, int *newBarril, int *newBarrilBaja, int *newBarrilMix, int *newLlam)
 {
 
   ///Verifica si mario se cae
@@ -691,15 +695,14 @@ void collisionDetect(int *newLlama, GameState *game, int *newBarril)
           game->man.dy = 0;
           game->man.enSuelo = 0;
           game->man.lives++;
+          masVel(game);
           *newBarril=0;
+          *newBarrilBaja=0;
+          *newBarrilMix=0;
+          *newLlam=0;
           
 
-          int i;
-          for(i=0; i < NUM_BARRILES; i++)
-          {
-            game->barriles[i].masVel +=0.5;
-    
-          }
+          
   }        
 
   
@@ -924,6 +927,26 @@ int processEvents(SDL_Window *window, GameState *game, int *newBarril, int *newL
   }
 
   return done;
+}
+
+void masVel(GameState *game){
+  int i;
+  for(i=0; i < NUM_BARRILES; i++)
+  {
+    game->barriles[i].masVel +=0.25;
+    
+  }
+  for(i=0; i < NUM_BARRIL_BAJA; i++)
+  {
+    game->barrilBaja[i].masVel +=0.25;
+    
+  }
+  for(i=0; i < NUM_BARRIL_MIX; i++)
+  {
+    game->barrilMix[i].masVel +=0.25;
+    
+  }
+  
 }
 
 ///Metodo para dibujar en pantalla todo lo que sea solicitado
@@ -1229,7 +1252,7 @@ void createBarrilBaja(int newBarrilBaja, int dy, GameState *game)
   numero = rand() % 595; 
   game->barrilBaja[newBarrilBaja].x = numero;
   game->barrilBaja[newBarrilBaja].y = 120;
-  game->barrilBaja[newBarrilBaja].dy = dy;
+  game->barrilBaja[newBarrilBaja].dy = dy + game->barrilBaja[newBarrilBaja].masVel;
   game->barrilBaja[newBarrilBaja].barrilBajanFrame = 0;
   game->barrilBaja[newBarrilBaja].collideFire = 0;
   
@@ -1240,7 +1263,7 @@ void createBarrilMix(int newBarrilMix, GameState *game){
   game->barrilMix[newBarrilMix].y = 120;
   game->barrilMix[newBarrilMix].mix = 1;
   game->barrilMix[newBarrilMix].barrilMixFrame = 0;
-  game->barrilMix[newBarrilMix].dx = 1;
+  game->barrilMix[newBarrilMix].dx = 1+ game->barrilMix[newBarrilMix].masVel;
   game->barrilMix[newBarrilMix].dy = 0;
   game->barrilMix[newBarrilMix].controlador = 0;
   game->barrilMix[newBarrilMix].collideFire = 0;
@@ -1472,9 +1495,9 @@ int main(int argc, char *argv[])
     }
 
     ///Llama al metodo process que nos permite crear las animaciones de movimiento
-    process(newBarril, newLlama, newBarrilBaja, newBarrilMix, &gameState);
+    process(newBarril, newLlama, newBarrilBaja, newBarrilMix, &gameState, &newLlama, &newBarril, &newBarrilBaja, &newBarrilMix);
     ///Llama al metodo que verifica colosiones entre objetos
-    collisionDetect(&temporalLlama, &gameState, &newBarril);
+    collisionDetect(&temporalLlama, &gameState, &newBarril, &newBarrilBaja, &newBarrilMix, &newLlama);
 
     ///Llama al metodo que dezplega el render
     doRender(renderer, &gameState, newBarril, newLlama, newBarrilBaja, newBarrilMix);
