@@ -10,6 +10,7 @@
 #include "events.h"
 #include "collide.h"
 #include "process.h"
+#include "socket.h"
 #include <stdlib.h>
 
 //GUI
