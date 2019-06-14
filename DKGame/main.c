@@ -577,6 +577,11 @@ int collide2d(float x1, float y1, float x2, float y2, float wt1, float ht1, floa
 ///Recibe un gameState
 void collisionDetect(int *newLlama, GameState *game)
 {
+
+  ///Verifica si mario se cae
+  if(game->man.y > 700){
+    game->man.muerto = 1;
+  }
    ///Verifica choques con barriles y mario y llamas
   int i;
   for(int i = 0; i < NUM_BARRILES; i++)
