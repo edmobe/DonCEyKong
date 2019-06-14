@@ -45,8 +45,8 @@ void update_game_positions(char *buffer, float *posx, float *posy) {
 int main(int argc , char *argv[])
 {
     int opt = TRUE;
-    int master_socket , addrlen , new_socket , client_socket[3] ,
-            max_clients = 3 , activity, i , valread , sd;
+    int master_socket , addrlen , new_socket , client_socket[4] ,
+            max_clients = 4 , activity, i , valread , sd;
     int max_sd;
     struct sockaddr_in address;
 
@@ -99,8 +99,8 @@ int main(int argc , char *argv[])
     }
     printf("Conexion en el puerto: %d \n", PORT);
 
-    //try to specify maximum of 3 pending connections for the master socket
-    if (listen(master_socket, 3) < 0)
+    //try to specify maximum of 4 pending connections for the master socket
+    if (listen(master_socket, 4) < 0)
     {
         perror("listen");
         exit(EXIT_FAILURE);
@@ -216,23 +216,42 @@ int main(int argc , char *argv[])
                         printf("Barril tipo %c recibido\n", barrel_sent_game);
                         char* update_message = "Barril recibido";
                         send(sd, update_message, strlen(update_message), 0);
-                    } 
+                    }
                     //Si el cliente Game solicita informacion del juego
                     else if(buffer[0] == '1'){
                         update_game_positions(buffer, &posx, &posy);
                         printf("Se han actualizado las posiciones en X (%f) y en Y (%f)\n", posx, posy);
                         int i = 0;
+                        char all_info[500];
                         while(buffer[i] != '\0') {
                             positions[i] = buffer[i];
+                            all_info[i] = buffer[i];
                             i++;
                         }
-                        positions[i] = '/';
-                        positions[i + 1] = barrel_sent_game;
-                        positions[i + 2] = '\0';
-                        send(sd, positions, strlen(positions), 0);
+                        all_info[i] = '/';
+                        all_info[i + 1] = barrel_sent_game;
+                        all_info[i + 2] = '\0';
+                        send(sd, all_info, strlen(all_info), 0);
                         //Si ya se envio el barril al cliente Game
                         if(barrel_sent_game != '0')
                             barrel_sent_game = '0';
+                    } 
+                    //Si el cliente Observer solicita informacion del juego
+                    else if(buffer[0] == '2'){
+                        printf("El observer solicita la informacion del juego\n");
+                        int i = 0;
+                        char all_info[500];
+                        while(positions[i] != '\0') {
+                            all_info[i] = positions[i];
+                            i++;
+                        }
+                        all_info[i] = '/';
+                        all_info[i + 1] = barrel_sent_observer;
+                        all_info[i + 2] = '\0';
+                        send(sd, all_info, strlen(all_info), 0);
+                        //Si ya se envio el barril al cliente Game
+                        if(barrel_sent_observer != '0')
+                            barrel_sent_observer = '0';
                     } else {
                         char *ukn_command = "No reconozco ese comando\n";
                         send(sd, ukn_command, strlen(ukn_command), 0);

@@ -9,6 +9,8 @@
 
 #define NUM_PISO 135
 #define NUM_BARRILES 15
+#define NUM_BARRIL_BAJA 15
+#define NUM_BARRIL_MIX 15
 #define NUM_ESCALERAS 12
 #define NUM_LLAMAS 50
 
@@ -36,7 +38,7 @@ typedef struct
 ///estructura de DK
 typedef struct
 {
-  int x, y;
+  int x, y, DKFrame;
 } Enemy;
 
 ///estructura del piso
@@ -48,16 +50,29 @@ typedef struct
 ///Estructura del barril 1
 typedef struct
 {
-    int x, y;
-    float dx, dy;
+    int x, y, collidFire;
+    float dx, dy, masVel;
 }Barril;
+
+///Bariles bajan
+typedef struct
+{
+    int x, y, barrilBajanFrame, collideFire;
+    float dy, masVel;
+}BarrilBajan;
+
+///Barril Mix
+typedef struct
+{
+    int x, y, barrilMixFrame, mix, animation, controlador, collideFire;
+    float dy, dx, masVel;
+}BarrilMix;
 
 ///Estructura de las llamas
 typedef struct 
 {
-  int x, y, llamaFrame;
+  int x, y, llamaFrame, gravedad, check;
   float dx, dy;
-  int gravedad, collide;
 }Llama;
 
 ///Estructura para la escalera
@@ -96,17 +111,25 @@ typedef struct
   ///Barriles
   Barril barriles[NUM_BARRILES];
 
+  ///Barriles que bajan
+  BarrilBajan barrilBaja[NUM_BARRIL_BAJA];
+
+  ///Barriles mix
+  BarrilMix barrilMix[NUM_BARRIL_MIX];
+
   ///Escalera
   Escalera escaleras[NUM_ESCALERAS];
 
   ///Images
+  SDL_Texture *barrilMixFrames[6];
+  SDL_Texture *barrilBajaFrames[2];
   SDL_Texture *llamaFrames[5];
   SDL_Texture *paulineFrames[5];
   SDL_Texture *barril;
   SDL_Texture *estanonFrames[2];
   SDL_Texture *escalera1;
-  SDL_Texture *DK[2];
-  SDL_Texture *marioFrames[2];
+  SDL_Texture *DK[3];
+  SDL_Texture *marioFrames[4];
   SDL_Texture *marioMuerto;
   SDL_Texture *suelo;
   SDL_Texture *label;
