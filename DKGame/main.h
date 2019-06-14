@@ -38,7 +38,7 @@ typedef struct
 ///estructura de DK
 typedef struct
 {
-  int x, y;
+  int x, y, DKFrame;
 } Enemy;
 
 ///estructura del piso
@@ -51,21 +51,21 @@ typedef struct
 typedef struct
 {
     int x, y, collidFire;
-    float dx, dy;
+    float dx, dy, masVel;
 }Barril;
 
 ///Bariles bajan
 typedef struct
 {
     int x, y, barrilBajanFrame, collideFire;
-    float dy;
+    float dy, masVel;
 }BarrilBajan;
 
 ///Barril Mix
 typedef struct
 {
     int x, y, barrilMixFrame, mix, animation, controlador, collideFire;
-    float dy, dx;
+    float dy, dx, masVel;
 }BarrilMix;
 
 ///Estructura de las llamas
@@ -128,8 +128,8 @@ typedef struct
   SDL_Texture *barril;
   SDL_Texture *estanonFrames[2];
   SDL_Texture *escalera1;
-  SDL_Texture *DK[2];
-  SDL_Texture *marioFrames[2];
+  SDL_Texture *DK[3];
+  SDL_Texture *marioFrames[4];
   SDL_Texture *marioMuerto;
   SDL_Texture *suelo;
   SDL_Texture *label;

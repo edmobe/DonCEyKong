@@ -114,50 +114,44 @@ void loadGame(GameState *game)
   game->estanonFrames[1] = SDL_CreateTextureFromSurface(game->renderer, surface);
   SDL_FreeSurface(surface);
 
-  ///Carga la imagen de DK y crea texturas con el render a partir de ella
+  ///Carga la imagen de DK (0) y crea texturas con el render a partir de ella
   surface = IMG_Load("media/King9.png");
-  if(surface == NULL)
-  {
-    printf("Cannot find DK image!\n\n");
-    SDL_Quit();
-    exit(1);
-  }
   game->DK[0] = SDL_CreateTextureFromSurface(game->renderer, surface);
+  SDL_FreeSurface(surface);
+
+  ///Carga la imagen de DK (1) y crea texturas con el render a partir de ella
+  surface = IMG_Load("media/King8.png");
+  game->DK[1] = SDL_CreateTextureFromSurface(game->renderer, surface);
+  SDL_FreeSurface(surface);
+
+  ///Carga la imagen de DK (2) y crea texturas con el render a partir de ella
+  surface = IMG_Load("media/King11.png");
+  game->DK[2] = SDL_CreateTextureFromSurface(game->renderer, surface);
   SDL_FreeSurface(surface);
 
   ///Carga la imagen de mario muerto y crea texturas con el render a partir de ella
   surface = IMG_Load("media/mario2.png");
-  if(surface == NULL)
-  {
-    printf("Cannot find mario muerto image!\n\n");
-    SDL_Quit();
-    exit(1);
-  }
   game->marioMuerto = SDL_CreateTextureFromSurface(game->renderer, surface);
   SDL_FreeSurface(surface);
 
   ///Carga la imagen de Mario (0) y crea texturas con el render a partir de ella
   surface = IMG_Load("media/run4.png");
-  if(surface == NULL)
-  {
-    printf("Cannot find mario image!\n\n");
-    SDL_Quit();
-    exit(1);
-  }
-
   game->marioFrames[0] = SDL_CreateTextureFromSurface(game->renderer, surface);
   SDL_FreeSurface(surface);
 
   ///Carga la imagen de Mario (1) y crea texturas con el render a partir de ella
   surface = IMG_Load("media/run5.png");
-  if(surface == NULL)
-  {
-    printf("Cannot find mario image!\n\n");
-    SDL_Quit();
-    exit(1);
-  }
-
   game->marioFrames[1] = SDL_CreateTextureFromSurface(game->renderer, surface);
+  SDL_FreeSurface(surface);
+
+  ///Carga la imagen de Mario (2) y crea texturas con el render a partir de ella
+  surface = IMG_Load("media/mario11.png");
+  game->marioFrames[2] = SDL_CreateTextureFromSurface(game->renderer, surface);
+  SDL_FreeSurface(surface);
+
+  ///Carga la imagen de Mario (3) y crea texturas con el render a partir de ella
+  surface = IMG_Load("media/mario13.png");
+  game->marioFrames[3] = SDL_CreateTextureFromSurface(game->renderer, surface);
   SDL_FreeSurface(surface);
 
   ///Carga la imagen del Suelo y crea texturas con el render a partir de ella
@@ -212,6 +206,7 @@ void loadGame(GameState *game)
   ///init DK
   game->dk.x = 20;
   game->dk.y = 80;
+  game->dk.DKFrame=0;
 
   ///init suelo
   ///primer piso
@@ -366,6 +361,24 @@ void process(int newBarril, int newLlama, int newBarrilBaja, int newBarrilMix, G
             game->estanon.estanonFrame = 0;
           }
       } 
+
+      ///Animación de DK
+      if (game->time % 8 == 0){
+        if(game->dk.DKFrame == 0)
+          {
+            game->dk.DKFrame = 1;
+                   
+          }
+          else if(game->dk.DKFrame == 1)
+          {
+            game->dk.DKFrame = 2;
+
+          } 
+          else 
+          {
+            game->dk.DKFrame = 0;
+          }
+      }
 
       ///Animación de Pauline
       if (game->time % 8 == 0 && game->pauline.dx > 0){
@@ -531,7 +544,7 @@ void process(int newBarril, int newLlama, int newBarrilBaja, int newBarrilMix, G
           ///reset
           game->man.muerto = 0;
           game->man.x = 100;
-          game->man.y = 240-40;
+          game->man.y = 625;
           game->man.dx = 0;
           game->man.dy = 0;
           game->man.enSuelo = 0;
@@ -660,8 +673,24 @@ void collisionDetect(int *newLlama, GameState *game)
   if(collide2d(game->man.x, game->man.y, game->pauline.x, game->pauline.y, 30, 30, 30, 30))
   {
         init_game_win(game);
-        game->statusState = STATUS_STATE_WIN;
-  }
+        game->statusState = STATUS_STATE_LIVES;
+        game->time = 0;
+
+          ///reset
+          game->man.muerto = 0;
+          game->man.x = 100;
+          game->man.y = 625;
+          game->man.dx = 0;
+          game->man.dy = 0;
+          game->man.enSuelo = 0;
+          game->man.lives++;
+          int i;
+          for(i=0; i < NUM_BARRILES; i++)
+          {
+            game->barriles[i].masVel +=0.5;
+    
+          }
+  }        
 
   
 
@@ -768,7 +797,7 @@ int processEvents(SDL_Window *window, GameState *game, int *newBarril, int *newL
         }
       }
       break;
-      ///caso en que se apreta la tecla de abajo
+      ///caso en que se apreta una tecla
       case SDL_KEYDOWN:
       {
         switch(event.key.keysym.sym)
@@ -809,8 +838,22 @@ int processEvents(SDL_Window *window, GameState *game, int *newBarril, int *newL
           
           if ((collide2d(game->man.x, game->man.y, game->escaleras[i].x, game->escaleras[i].y, 30, 30, 30, 40)))
             { 
+              game->man.animFrame=2;
+              ///Animación de mario en escaleras
+              if (game->time % 8 == 0){
+                if(game->man.animFrame == 2)
+                {
+                  game->man.animFrame = 3;
+                   
+                }              
+                 else 
+                {
+                   game->man.animFrame = 2;
+                }
+              }
               if (!(collide2d(game->man.x, game->man.y, game->escaleras[i].x, game->escaleras[i].y, 30, 30, 30, 40)))
               { 
+                game->man.animFrame=0;
                 if(state[SDL_SCANCODE_UP])
                 {
                   game->man.dy +=GRAVEDAD;
@@ -957,9 +1000,9 @@ void doRender(SDL_Renderer *renderer, GameState *game, int newBarril, int newLla
 
   ///dibujando a DK
   SDL_Rect DKRect = { game->dk.x, game->dk.y, 70, 70 };
-  SDL_RenderCopy(renderer, game->DK[0], NULL, &DKRect);
+  SDL_RenderCopy(renderer, game->DK[game->dk.DKFrame], NULL, &DKRect);
 
-  ///Dibuja a pailine 
+  ///Dibuja a pauline 
   SDL_Rect paulineRect = {game->pauline.x, game->pauline.y, 30, 30};
   SDL_RenderCopy(renderer, game->paulineFrames[game->pauline.paulineFrame], NULL, &paulineRect);
 
