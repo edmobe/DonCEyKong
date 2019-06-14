@@ -562,9 +562,9 @@ int collide2d(float x1, float y1, float x2, float y2, float wt1, float ht1, floa
 
 ///Metodo para verificar las colisiones
 ///Recibe un gameState
-void collisionDetect(GameState *game)
+void collisionDetect(int *newLlama, GameState *game)
 {
-   ///Verifica choques con barriles
+   ///Verifica choques con barriles y mario y llamas
   int i;
   for(int i = 0; i < NUM_BARRILES; i++)
   {
@@ -580,7 +580,52 @@ void collisionDetect(GameState *game)
       game->man.muerto = 1;
     }
   }
+  for(i = 0; i < NUM_BARRIL_MIX; i++)
+  {
+    if(collide2d(game->man.x, game->man.y, game->barrilMix[i].x, game->barrilMix[i].y, 30, 30, 20, 20))
+    {
+      game->man.muerto = 1;
+    }
+  }
+  for(i = 0; i < NUM_LLAMAS; i++)
+  {
+    if(collide2d(game->man.x, game->man.y, game->llamas[i].x, game->llamas[i].y, 30, 30, 20, 20))
+    {
+      game->man.muerto = 1;
+    }
+  }
+  if(collide2d(game->man.x, game->man.y, game->dk.x, game->dk.y, 30, 30, 70, 70))
+    {
+      game->man.muerto = 1;
+    }
 
+  ///Choque de barril con el estañon
+  for(i = 0; i < NUM_BARRILES; i++)
+  {
+    if(collide2d(game->estanon.x, game->estanon.y, game->barriles[i].x, game->barriles[i].y, 20, 20, 40, 40) && game->barriles[i].collidFire == 0)
+    {
+      *newLlama = *newLlama + 1;
+      game->barriles[i].collidFire = 1;
+    }
+  }
+  for(i = 0; i < NUM_BARRIL_BAJA; i++)
+  {
+    if(collide2d(game->estanon.x, game->estanon.y, game->barrilBaja[i].x, game->barrilBaja[i].y, 20, 20, 40, 40) && game->barrilBaja[i].collideFire == 0)
+    {
+      *newLlama = *newLlama + 1;
+      game->barrilBaja[i].collideFire = 1;
+    }
+  }
+  for(i = 0; i < NUM_BARRIL_MIX; i++)
+  {
+    if(collide2d(game->estanon.x, game->estanon.y, game->barrilMix[i].x, game->barrilMix[i].y, 20, 20, 40, 40) && game->barrilMix[i].collideFire == 0)
+    {
+      *newLlama = *newLlama + 1;
+      game->barrilMix[i].collideFire = 1;
+    }
+  }
+
+  ///Colisiones de las llamas con las escaleras
   for (int i = 0; i < NUM_LLAMAS; i++){
     for (int j = 0; j < NUM_ESCALERAS; j++){
       if(collide2d(game->llamas[i].x, game->llamas[i].y, game->escaleras[j].x+10, game->escaleras[j].y, 20, 20, 1, 40))
@@ -617,6 +662,8 @@ void collisionDetect(GameState *game)
         init_game_win(game);
         game->statusState = STATUS_STATE_WIN;
   }
+
+  
 
   ///Verifica que mario no salga por la derecha
   if(game->man.x >= 600)
@@ -1141,6 +1188,7 @@ void createBarril(int newBarril, GameState *game)
   game->barriles[newBarril].y = 120;
   game->barriles[newBarril].dx = 1;
   game->barriles[newBarril].dy = 0;
+  game->barriles[newBarril].collidFire = 0;
 }
 
 ///Crea una llama cada vez que se presiona el botón F
@@ -1165,6 +1213,7 @@ void createBarrilBaja(int newBarrilBaja, int dy, GameState *game)
   game->barrilBaja[newBarrilBaja].y = 120;
   game->barrilBaja[newBarrilBaja].dy = dy;
   game->barrilBaja[newBarrilBaja].barrilBajanFrame = 0;
+  game->barrilBaja[newBarrilBaja].collideFire = 0;
   
   
 }
@@ -1176,6 +1225,7 @@ void createBarrilMix(int newBarrilMix, GameState *game){
   game->barrilMix[newBarrilMix].dx = 1;
   game->barrilMix[newBarrilMix].dy = 0;
   game->barrilMix[newBarrilMix].controlador = 0;
+  game->barrilMix[newBarrilMix].collideFire = 0;
 }
 
 ///Mueve a Pauline 
@@ -1395,7 +1445,7 @@ int main(int argc, char *argv[])
     ///Llama al metodo process que nos permite crear las animaciones de movimiento
     process(newBarril, newLlama, newBarrilBaja, newBarrilMix, &gameState);
     ///Llama al metodo que verifica colosiones entre objetos
-    collisionDetect(&gameState);
+    collisionDetect(&temporalLlama, &gameState);
 
     ///Llama al metodo que dezplega el render
     doRender(renderer, &gameState, newBarril, newLlama, newBarrilBaja, newBarrilMix);

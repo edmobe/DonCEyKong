@@ -50,21 +50,21 @@ typedef struct
 ///Estructura del barril 1
 typedef struct
 {
-    int x, y;
+    int x, y, collidFire;
     float dx, dy;
 }Barril;
 
 ///Bariles bajan
 typedef struct
 {
-    int x, y, barrilBajanFrame;
+    int x, y, barrilBajanFrame, collideFire;
     float dy;
 }BarrilBajan;
 
 ///Barril Mix
 typedef struct
 {
-    int x, y, barrilMixFrame, mix, animation, controlador;
+    int x, y, barrilMixFrame, mix, animation, controlador, collideFire;
     float dy, dx;
 }BarrilMix;
 
