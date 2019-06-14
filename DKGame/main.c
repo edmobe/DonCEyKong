@@ -186,8 +186,7 @@ void loadGame(GameState *game)
   game->man.slowingDown = 0;
   game->man.lives=3;
   game->man.muerto = 0;
-  game->man.up = 0;
-  game->man.down = 0;
+  game->man.direction = 'R';
 
   ///init el estado del juego
   game->statusState=STATUS_STATE_LIVES;
@@ -624,6 +623,8 @@ void collisionDetect(int *newLlama, GameState *game)
     {
       *newLlama = *newLlama + 1;
       game->barriles[i].collidFire = 1;
+      
+     
     }
   }
   for(i = 0; i < NUM_BARRIL_BAJA; i++)
@@ -640,6 +641,7 @@ void collisionDetect(int *newLlama, GameState *game)
     {
       *newLlama = *newLlama + 1;
       game->barrilMix[i].collideFire = 1;
+
     }
   }
 
@@ -881,45 +883,10 @@ int processEvents(SDL_Window *window, GameState *game, int *newBarril, int *newL
         }
     }
 
-  ///Tecla para lanzar barril
-  if(state[SDL_SCANCODE_P])
-  {
-    
-    *newBarril = *newBarril + 1; 
-  }
-  ///Tecla para lanzar barril que baja
-  if(state[SDL_SCANCODE_U])
-  {
-    
-    *newBarrilBaja = *newBarrilBaja + 1; 
-  }
-  ///Tecla para lanzar barrilMIx
-  if(state[SDL_SCANCODE_O])
-  {
-    
-    *newBarrilMix = *newBarrilMix + 1; 
-  }
-    
-  if(!(state[SDL_SCANCODE_UP]))
-  {
-    game->man.up = 0;
-  }
-
-    ///Tecla para lanzar llamas
-  if(state[SDL_SCANCODE_F])
-  {
-    
-    *newLlamas = *newLlamas + 1; 
-  }
-    
-  if(!(state[SDL_SCANCODE_UP]))
-  {
-    game->man.up = 0;
-  }
-
   ///Caminar de mario a la izquierda
   if(state[SDL_SCANCODE_LEFT])
   {
+    game->man.direction = 'L';
     game->man.dx -= 0.5;
     if(game->man.dx < -6)
     {
@@ -931,6 +898,7 @@ int processEvents(SDL_Window *window, GameState *game, int *newBarril, int *newL
   ///Caminar de mario a la derecha
   else if(state[SDL_SCANCODE_RIGHT])
   {
+    game->man.direction = 'R';
     game->man.dx += 0.5;
     if(game->man.dx > 6)
     {
@@ -942,6 +910,7 @@ int processEvents(SDL_Window *window, GameState *game, int *newBarril, int *newL
   ///mario no camina, es decir frena al no apretar la decla de la derecha o la izquierda
   else
   {
+    game->man.direction = 'S';
     game->man.animFrame = 0;
     game->man.dx *= 0.8f;
     game->man.slowingDown = 1;
@@ -953,8 +922,6 @@ int processEvents(SDL_Window *window, GameState *game, int *newBarril, int *newL
 
   return done;
 }
-
-
 
 ///Metodo para dibujar en pantalla todo lo que sea solicitado
 ///Recibe un render y un gameState
@@ -1303,22 +1270,30 @@ void moveBarrilBaja(int newBarrilBaja ,GameState *game){
 }
 
 int barrel_event(char *buffer) {
-  int n = 0;
-  while(buffer[n] != '\0'){
-    n++;
-  }
-  if(buffer[n-1] == '1') {
+    const int pos = 3;
+    int i = 2;
+    int n;
+    for(n = 0; n < pos; n++){
+      while(buffer[i] != '/') {
+        i++;
+      }
+      i++;
+
+    }
+
+  if(buffer[i] == '1') {
     return 1;
   }
-  else if(buffer[n-1] == '2') {
+  else if(buffer[i] == '2') {
     return 2;
   }
-  else if(buffer[n-1] == '3') {
+  else if(buffer[i] == '3') {
     return 3;
   }
   return 0;
 }
 
+///*************************************************************************************************************
 // Da la informacion del juego al servidor
 void send_info(int sockfd, GameState *game, int *newBarril, int *newBarrilBaja, int *newBarrilMix)
 {
@@ -1346,6 +1321,9 @@ void send_info(int sockfd, GameState *game, int *newBarril, int *newBarrilBaja, 
       j++;
     }
 
+    buffer[i] = '/';
+    buffer[i+1] = game->man.direction;
+
     printf("%s\n", buffer);
 
     write(sockfd, buffer, sizeof(buffer));
@@ -1367,7 +1345,7 @@ void send_info(int sockfd, GameState *game, int *newBarril, int *newBarrilBaja, 
         printf("El cliente ha salido...\n");
     }
 }
-
+///******************************************************************************************************
 
 /// Funcion main, esta funcion nos permite correr el juego juntando todo lo
 /// necesario para el buen funcionamiento

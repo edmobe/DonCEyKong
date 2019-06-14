@@ -41,6 +41,19 @@ void update_game_positions(char *buffer, float *posx, float *posy) {
     *posx = (float)atof(x);
     *posy = (float)atof(y);
 }
+void update_game_direction(char* buffer, char* direction){
+    const int pos = 2;
+    int i = 2;
+    int n;
+    for(n = 0; n < pos; n++){
+      while(buffer[i] != '/') {
+        i++;
+      }
+      i++;
+
+    }
+    *direction = buffer[i];
+}
 
 int main(int argc , char *argv[])
 {
@@ -63,6 +76,7 @@ int main(int argc , char *argv[])
     char barrel_sent_observer = '0';
     float posx = 0;
     float posy = 0;
+    char direction  = 'S';
 
     //initialise all client_socket[] to 0 so not checked
     for (i = 0; i < max_clients; i++)
@@ -220,17 +234,30 @@ int main(int argc , char *argv[])
                     //Si el cliente Game solicita informacion del juego
                     else if(buffer[0] == '1'){
                         update_game_positions(buffer, &posx, &posy);
+                        update_game_direction(buffer, &direction);
                         printf("Se han actualizado las posiciones en X (%f) y en Y (%f)\n", posx, posy);
-                        int i = 0;
+                        printf("Se ha actualizado la direccion: %c\n", direction);
+                        int i = 2;
                         char all_info[500];
-                        while(buffer[i] != '\0') {
+                        all_info[0] = '1';
+                        all_info[1] = '/';
+                        while(buffer[i] != '/') {
+                            positions[i] = buffer[i];
+                            all_info[i] = buffer[i];
+                            i++;
+                        }
+                        positions[i] = all_info[i] = '/';
+                        i++;
+                        while(buffer[i] != '/') {
                             positions[i] = buffer[i];
                             all_info[i] = buffer[i];
                             i++;
                         }
                         all_info[i] = '/';
-                        all_info[i + 1] = barrel_sent_game;
-                        all_info[i + 2] = '\0';
+                        all_info[i + 1] = direction;
+                        all_info[i + 2] = '/';
+                        all_info[i + 3] = barrel_sent_game;
+                        all_info[i + 4] = '\0';
                         send(sd, all_info, strlen(all_info), 0);
                         //Si ya se envio el barril al cliente Game
                         if(barrel_sent_game != '0')
@@ -239,15 +266,19 @@ int main(int argc , char *argv[])
                     //Si el cliente Observer solicita informacion del juego
                     else if(buffer[0] == '2'){
                         printf("El observer solicita la informacion del juego\n");
-                        int i = 0;
+                        int i = 2;
                         char all_info[500];
+                        all_info[0] = '2';
+                        all_info[1] = '/';
                         while(positions[i] != '\0') {
                             all_info[i] = positions[i];
                             i++;
                         }
                         all_info[i] = '/';
-                        all_info[i + 1] = barrel_sent_observer;
-                        all_info[i + 2] = '\0';
+                        all_info[i + 1] = direction;
+                        all_info[i + 2] = '/';
+                        all_info[i + 3] = barrel_sent_observer;
+                        all_info[i + 4] = '\0';
                         send(sd, all_info, strlen(all_info), 0);
                         //Si ya se envio el barril al cliente Game
                         if(barrel_sent_observer != '0')

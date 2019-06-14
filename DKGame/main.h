@@ -24,7 +24,7 @@ typedef struct
   float dx, dy;
   int enSuelo, muerto;
   int lives;
-  int up, down;
+  char direction;
 
   int animFrame, izq, slowingDown;
 } Man;
