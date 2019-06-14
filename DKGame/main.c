@@ -574,7 +574,7 @@ int collide2d(float x1, float y1, float x2, float y2, float wt1, float ht1, floa
 
 ///Metodo para verificar las colisiones
 ///Recibe un gameState
-void collisionDetect(int *newLlama, GameState *game)
+void collisionDetect(int *newLlama, GameState *game, int *newBarril)
 {
 
   ///Verifica si mario se cae
@@ -691,6 +691,9 @@ void collisionDetect(int *newLlama, GameState *game)
           game->man.dy = 0;
           game->man.enSuelo = 0;
           game->man.lives++;
+          *newBarril=0;
+          
+
           int i;
           for(i=0; i < NUM_BARRILES; i++)
           {
@@ -1471,7 +1474,7 @@ int main(int argc, char *argv[])
     ///Llama al metodo process que nos permite crear las animaciones de movimiento
     process(newBarril, newLlama, newBarrilBaja, newBarrilMix, &gameState);
     ///Llama al metodo que verifica colosiones entre objetos
-    collisionDetect(&temporalLlama, &gameState);
+    collisionDetect(&temporalLlama, &gameState, &newBarril);
 
     ///Llama al metodo que dezplega el render
     doRender(renderer, &gameState, newBarril, newLlama, newBarrilBaja, newBarrilMix);
